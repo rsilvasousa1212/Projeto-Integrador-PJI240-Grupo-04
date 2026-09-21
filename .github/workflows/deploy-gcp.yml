@@ -3,9 +3,7 @@ name: Deploy Backend to Google Cloud Run
 on:
   push:
     branches:
-      - dev_fabio  # Dispara apenas quando você der push na sua branch dev_fabio
-    paths:
-      - 'backend/**' # 👈 Só dispara se houver alterações dentro da pasta backend
+      - dev_fabio  # Dispara em qualquer push na branch dev_fabio
 
 env:
   PROJECT_ID: epatrimonio-509317       # ID do seu projeto no GCP
