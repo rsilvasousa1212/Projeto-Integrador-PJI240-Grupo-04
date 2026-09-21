@@ -28,18 +28,12 @@ jobs:
         with:
           project_id: ${{ env.PROJECT_ID }}
 
-      - name: Build e Push da Imagem usando Cloud Build (Modo Assíncrono)
-        # Unificado: aponta para ./backend/api (onde está o código) e usa --async para não travar nos logs
+      - name: Build e Push da Imagem usando Cloud Build
         run: |
           gcloud builds submit \
             --project="${{ env.PROJECT_ID }}" \
             --tag="gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" \
-            ./backend/api \
-            --async
-
-      - name: Aguardar o Cloud Build processar a imagem Java
-        # Aumentado para 90 segundos para dar tempo do Maven baixar as dependências e gerar o JAR
-        run: sleep 90
+            ./backend/api
 
       - name: Implantar no Cloud Run
         run: |
@@ -49,4 +43,6 @@ jobs:
             --platform=managed \
             --region="${{ env.REGION }}" \
             --allow-unauthenticated \
-            --port=8080
+            --port=8080 \
+            --memory=1Gi \
+            --set-env-vars="DB_URL=${{ secrets.SUPABASE_DB_HOST }},DB_USERNAME=${{ secrets.SUPABASE_USER }},DB_PASSWORD=${{ secrets.SUPABASE_PASSWORD }}"
