@@ -1,0 +1,10 @@
+# Ignora diretórios desnecessários no build Docker
+target/
+.vscode/
+.git/
+.gitignore
+*.md
+*.log
+
+# Ignora o .env local (variáveis serão injetadas pelo Render)
+.env
