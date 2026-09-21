@@ -1,0 +1,43 @@
+name: Deploy Backend to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - dev_fabio  # Dispara apenas quando você der push na sua branch dev_fabio
+    paths:
+      - 'backend/**' # 👈 Só dispara se houver alterações dentro da pasta backend
+
+env:
+  PROJECT_ID: epatrimonio-509317       # ID do seu projeto no GCP
+  SERVICE_NAME: epatrimonio-backend   # Nome do serviço no Cloud Run
+  REGION: us-central1                  # Região de sua preferência
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Código
+      uses: actions/checkout@v4
+
+    - name: Autenticar no Google Cloud
+      uses: google-github-actions/auth@v2
+      with:
+        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+    - name: Configurar Google Cloud SDK
+      uses: google-github-actions/setup-gcloud@v2
+
+    - name: Build e Push da Imagem usando Cloud Build
+      # 👈 O ponto final (.) virou './backend' para o contexto do Docker rodar lá dentro
+      run: |
+        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ./backend
+
+    - name: Implantar no Cloud Run
+      run: |
+        gcloud run deploy ${{ env.SERVICE_NAME }} \
+          --image gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+          --platform managed \
+          --region ${{ env.REGION }} \
+          --allow-unauthenticated \
+          --port 8080
