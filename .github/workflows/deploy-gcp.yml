@@ -29,9 +29,9 @@ jobs:
       uses: google-github-actions/setup-gcloud@v2
 
     - name: Build e Push da Imagem usando Cloud Build
-      # 👈 O ponto final (.) virou './backend' para o contexto do Docker rodar lá dentro
+      # O Dockerfile está em backend/api/, então o contexto deve apontar para lá
       run: |
-        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ./backend
+        gcloud builds submit --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} ./backend/api
 
     - name: Implantar no Cloud Run
       run: |
