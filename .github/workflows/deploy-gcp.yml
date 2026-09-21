@@ -35,6 +35,19 @@ jobs:
             --tag="gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" \
             ./backend/api
 
+      # Mudança: Adicionamos a flag --async no final para não travar na leitura do log
+      - name: Build e Push da Imagem usando Cloud Build
+        run: |
+          gcloud builds submit \
+            --tag gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }} \
+            ./backend \
+            --async
+
+      # Adicionamos uma pequena pausa de 15 segundos para dar tempo do container começar a existir antes do deploy
+      - name: Aguardar processamento inicial
+        run: sleep 15
+
+        
       - name: Implantar no Cloud Run
         run: |
           gcloud run deploy "${{ env.SERVICE_NAME }}" \
