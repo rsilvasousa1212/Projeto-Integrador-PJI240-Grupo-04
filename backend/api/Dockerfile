@@ -1,5 +1,5 @@
 # ─── Stage 1: Build ───────────────────────────────────────────────────────────
-FROM eclipse-temurin:23-jdk-alpine AS builder
+FROM eclipse-temurin:26-jdk-alpine AS builder
 WORKDIR /app
 
 # Copia o Maven Wrapper e o pom.xml primeiro (cache de dependências)
@@ -19,7 +19,7 @@ COPY src ./src
 RUN ./mvnw clean package -DskipTests -B
 
 # ─── Stage 2: Runtime ─────────────────────────────────────────────────────────
-FROM eclipse-temurin:23-jre-alpine
+FROM eclipse-temurin:26-jre-alpine
 WORKDIR /app
 
 # Copia apenas o JAR gerado no stage anterior
