@@ -37,11 +37,6 @@ jobs:
 
       - name: Implantar no Cloud Run
         run: |
-          gcloud run services update "${{ env.SERVICE_NAME }}" \
-            --project="${{ env.PROJECT_ID }}" \
-            --region="${{ env.REGION }}" \
-            --remove-env-vars="DB_URL,DB_USERNAME,DB_PASSWORD"
-
           gcloud run deploy "${{ env.SERVICE_NAME }}" \
             --project="${{ env.PROJECT_ID }}" \
             --image="gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" \
@@ -50,4 +45,5 @@ jobs:
             --allow-unauthenticated \
             --port=8080 \
             --memory=1Gi \
+            --clear-env-vars \
             --set-secrets="DB_URL=SUPABASE_DB_HOST:latest,DB_USERNAME=SUPABASE_USER:latest,DB_PASSWORD=SUPABASE_PASSWORD:latest"
