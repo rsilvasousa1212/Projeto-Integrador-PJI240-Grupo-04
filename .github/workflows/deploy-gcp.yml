@@ -45,4 +45,4 @@ jobs:
             --allow-unauthenticated \
             --port=8080 \
             --memory=1Gi \
-            --set-env-vars="DB_URL=${{ secrets.SUPABASE_DB_HOST }},DB_USERNAME=${{ secrets.SUPABASE_USER }},DB_PASSWORD=${{ secrets.SUPABASE_PASSWORD }}"
+            --set-secrets="DB_URL=SUPABASE_DB_HOST:latest,DB_USERNAME=SUPABASE_USER:latest,DB_PASSWORD=SUPABASE_PASSWORD:latest"
