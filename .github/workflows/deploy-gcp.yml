@@ -37,6 +37,11 @@ jobs:
 
       - name: Implantar no Cloud Run
         run: |
+          gcloud run services update "${{ env.SERVICE_NAME }}" \
+            --project="${{ env.PROJECT_ID }}" \
+            --region="${{ env.REGION }}" \
+            --remove-env-vars="DB_URL,DB_USERNAME,DB_PASSWORD"
+
           gcloud run deploy "${{ env.SERVICE_NAME }}" \
             --project="${{ env.PROJECT_ID }}" \
             --image="gcr.io/${{ env.PROJECT_ID }}/${{ env.SERVICE_NAME }}:${{ github.sha }}" \
