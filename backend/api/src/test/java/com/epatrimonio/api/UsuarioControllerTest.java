@@ -19,7 +19,7 @@ class UsuarioControllerTest {
     private int port;
 
     @Test
-    void deveExibirListaDeUsuarios() throws Exception {
+    void deveRecusarBasicNaApiDeUsuarios() throws Exception {
         URI endpoint = URI.create("http://localhost:" + port + "/api/usuarios");
         HttpClient client = HttpClient.newHttpClient();
 
@@ -30,7 +30,7 @@ class UsuarioControllerTest {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.statusCode()).isEqualTo(401);
     }
 
     @Test
