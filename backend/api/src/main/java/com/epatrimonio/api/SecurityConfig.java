@@ -13,7 +13,7 @@ public class SecurityConfig {
 	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		http
 				.authorizeHttpRequests(authorize -> authorize
-						.requestMatchers("/sistema-interno-dados/**").authenticated()
+						.requestMatchers("/sistema-interno-dados/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui", "/swagger-ui.html", "/test-swagger-ui.html").authenticated()
 						.anyRequest().permitAll())
 				.httpBasic(Customizer.withDefaults())
 				.csrf(csrf -> csrf.ignoringRequestMatchers("/sistema-interno-dados/**"));
