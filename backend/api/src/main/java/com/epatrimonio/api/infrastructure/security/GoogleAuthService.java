@@ -47,7 +47,7 @@ public class GoogleAuthService {
 
     public GoogleAuthService(
             @Value("${google.client-id}") String clientId,
-            @Value("${google.client-secret}") String clientSecret,
+            @Value("${google.client-secret:}") String clientSecret,
             SincronizarUsuarioGoogleUseCase sincronizarUsuario,
             JwtEncoder jwtEncoder,
             @Value("${app.jwt.issuer}") String jwtIssuer,
