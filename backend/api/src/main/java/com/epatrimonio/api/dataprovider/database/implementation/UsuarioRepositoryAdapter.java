@@ -21,6 +21,13 @@ public record UsuarioRepositoryAdapter(SpringUsuarioRepository springUsuarioRepo
     }
 
     @Override
+    public Optional<Usuario> buscarPorGoogleId(String googleId) {
+        return springUsuarioRepository.findByGoogleId(googleId)
+                .map(usuarioMapper::toDomain)
+                ;
+    }
+
+    @Override
     public Usuario salvar(Usuario usuario) {
         var entity = usuarioMapper.toEntity(usuario);
         return usuarioMapper.toDomain(springUsuarioRepository.save(entity));

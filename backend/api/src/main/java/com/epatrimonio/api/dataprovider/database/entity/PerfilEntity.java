@@ -5,6 +5,11 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,4 +26,10 @@ public class PerfilEntity {
     private String nome;
     private String descricao;
     private Boolean ativo;
+
+    @ManyToMany
+    @JoinTable(name = "perfil_permissao",
+            joinColumns = @JoinColumn(name = "perfil_id"),
+            inverseJoinColumns = @JoinColumn(name = "permissao_id"))
+    private Set<PermissaoEntity> permissoes = new HashSet<>();
 }

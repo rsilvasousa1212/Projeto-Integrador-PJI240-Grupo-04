@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.OffsetDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -41,8 +43,22 @@ public class UsuarioEntity {
     @Column(name = "atualizado_em")
     private OffsetDateTime atualizadoEm;
 
+        @ManyToMany(fetch = FetchType.EAGER)
+        @JoinTable(name = "usuario_perfil",
+            joinColumns = @JoinColumn(name = "usuario_id"),
+            inverseJoinColumns = @JoinColumn(name = "perfil_id"))
+        private Set<PerfilEntity> perfis = new HashSet<>();
+
     public Usuario toDomain() {
-        return new Usuario(id, googleId, email, nome, fotoUrl, ativo, criadoEm, atualizadoEm, null);
+        var perfisDomain = perfis.stream()
+            .map(perfil -> new com.epatrimonio.api.core.domain.Perfil(
+                perfil.getId(),
+                perfil.getNome(),
+                perfil.getDescricao(),
+                perfil.getAtivo(),
+                perfil.getPermissoes().stream().map(PermissaoEntity::getCodigo).toList()))
+            .toList();
+        return new Usuario(id, googleId, email, nome, fotoUrl, ativo, criadoEm, atualizadoEm, perfisDomain);
     }
 
     public static UsuarioEntity fromDomain(Usuario usuario) {

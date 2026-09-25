@@ -3,7 +3,9 @@ package com.epatrimonio.api.entrypoint.rest;
 import com.epatrimonio.api.dataprovider.database.implementation.UsuarioRepositoryAdapter;
 import com.epatrimonio.api.entrypoint.rest.dto.UsuarioResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,14 +25,26 @@ public class UsuarioController {
 
     @GetMapping("/usuarios")
     @Operation(summary = "Lista todos os usuários")
+    @SecurityRequirement(name = "bearerAuth")
     public List<UsuarioResponseDTO> listarTodos() {
         return usuarioRepositoryAdapter.buscarTodos().stream()
                 .map(UsuarioResponseDTO::from)
                 .toList();
     }
 
+    @GetMapping("/usuarios/me")
+    @Operation(summary = "Busca o usuário autenticado")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<UsuarioResponseDTO> buscarUsuarioAutenticado(Authentication authentication) {
+        return usuarioRepositoryAdapter.buscarPorGoogleId(authentication.getName())
+                .map(UsuarioResponseDTO::from)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/usuarios/{id}")
     @Operation(summary = "Busca um usuário por id")
+    @SecurityRequirement(name = "bearerAuth")
     public ResponseEntity<UsuarioResponseDTO> buscarPorId(@PathVariable Long id) {
         return usuarioRepositoryAdapter.buscarPorId(id)
                 .map(UsuarioResponseDTO::from)

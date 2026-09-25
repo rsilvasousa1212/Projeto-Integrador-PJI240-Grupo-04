@@ -46,4 +46,4 @@ jobs:
             --port=8080 \
             --memory=1Gi \
             --set-env-vars="CORS_ALLOWED_ORIGINS=https://epatrimonio-backend-982353293618.us-central1.run.app" \
-            --set-secrets="DB_URL=DB_URL:latest,DB_USERNAME=DB_USERNAME:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_PORT=DB_PORT:latest,DB_SSL_MODE=DB_SSL_MODE:latest,MONITORING_USER=MONITORING_USER:latest,MONITORING_PASSWORD=MONITORING_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest"
+            --set-secrets="DB_URL=DB_URL:latest,DB_USERNAME=DB_USERNAME:latest,DB_PASSWORD=DB_PASSWORD:latest,DB_PORT=DB_PORT:latest,DB_SSL_MODE=DB_SSL_MODE:latest,MONITORING_USER=MONITORING_USER:latest,MONITORING_PASSWORD=MONITORING_PASSWORD:latest,JWT_SECRET=JWT_SECRET:latest,CLIENT_ID=CLIENT_ID:latest,CLIENT_SECRET=CLIENT_SECRET:latest"
