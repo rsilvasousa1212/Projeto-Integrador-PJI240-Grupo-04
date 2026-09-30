@@ -10,7 +10,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+// import org.springframework.core.annotation.Order;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -50,9 +50,51 @@ public class SecurityConfig {
     @Value("${spring.security.user.password}")
     private String monitoringPassword;
 
-        @Bean
-        @Order(1)
-        SecurityFilterChain docsSecurityFilterChain(HttpSecurity http) throws Exception {
+
+    /*
+     * ============================================================
+     * SEGURANÇA TEMPORARIAMENTE DESABILITADA
+     * ============================================================
+     *
+     * Para RESTAURAR A SEGURANÇA:
+     * 1. Comentar/remover o SecurityFilterChain abaixo;
+     * 2. Descomentar os SecurityFilterChain originais;
+     * 3. Restaurar as regras de autenticação JWT/HTTP Basic.
+     *
+     */
+    @Bean
+    SecurityFilterChain temporaryOpenSecurityFilterChain(HttpSecurity http) throws Exception {
+
+        http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .authorizeHttpRequests(authorize ->
+                        authorize.anyRequest().permitAll()
+                );
+
+        return http.build();
+    }
+
+
+    /*
+     * ============================================================
+     * CONFIGURAÇÃO ORIGINAL DE SEGURANÇA
+     * ============================================================
+     *
+     * DESABILITADA TEMPORARIAMENTE.
+     *
+     * Quando for necessário retornar a autenticação, remova o
+     * comentário deste bloco e remova o temporaryOpenSecurityFilterChain().
+     */
+
+
+    /*
+    @Bean
+    @Order(1)
+    SecurityFilterChain docsSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher(
                 "/v3/api-docs/**",
@@ -60,131 +102,218 @@ public class SecurityConfig {
                 "/swagger-ui",
                 "/swagger-ui.html",
                 "/test-swagger-ui.html")
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize ->
+                authorize.anyRequest().authenticated())
             .httpBasic(Customizer.withDefaults());
 
         return http.build();
-        }
+    }
 
-        @Bean
-        @Order(2)
-        SecurityFilterChain monitoringSecurityFilterChain(HttpSecurity http) throws Exception {
-            http
-                    .securityMatcher("/sistema-interno-dados/**")
-                    .csrf(csrf -> csrf.disable())
-                    .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                    .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
-                    .httpBasic(Customizer.withDefaults());
 
-            return http.build();
-        }
+    @Bean
+    @Order(2)
+    SecurityFilterChain monitoringSecurityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/sistema-interno-dados/**")
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize ->
+                authorize.anyRequest().authenticated())
+            .httpBasic(Customizer.withDefaults());
 
-        @Bean
-        @Order(3)
-        SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+        return http.build();
+    }
+
+
+    @Bean
+    @Order(3)
+    SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/api/**")
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/api/auth/google").permitAll()
                 .requestMatchers("/api/auth/google/id-token").permitAll()
                 .requestMatchers("/api/auth/google/token").permitAll()
                 .anyRequest().authenticated())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(jwt ->
-                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt ->
+                    jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
                 .bearerTokenResolver(bearerTokenResolver()));
 
         return http.build();
     }
 
-        @Bean
-        @Order(4)
-        SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
+
+    @Bean
+    @Order(4)
+    SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(authorize ->
+                authorize.anyRequest().authenticated())
             .httpBasic(Customizer.withDefaults())
-            .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
+            .oauth2ResourceServer(oauth2 ->
+                oauth2.jwt(Customizer.withDefaults()));
 
         return http.build();
-        }
+    }
+    */
+
+
+    /*
+     * ============================================================
+     * JWT
+     * ============================================================
+     */
 
     @Bean
     JwtDecoder jwtDecoder() {
         return NimbusJwtDecoder.withSecretKey(
-                new SecretKeySpec(jwtSecret.getBytes(), "HmacSHA256"))
+                        new SecretKeySpec(
+                                jwtSecret.getBytes(StandardCharsets.UTF_8),
+                                "HmacSHA256"))
                 .build();
     }
 
     @Bean
     JwtEncoder jwtEncoder() {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(jwtSecret.getBytes(StandardCharsets.UTF_8)));
+        return new NimbusJwtEncoder(
+                new ImmutableSecret<>(
+                        jwtSecret.getBytes(StandardCharsets.UTF_8)
+                )
+        );
     }
+
 
     @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
+
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            Collection<GrantedAuthority> authorities = new ArrayList<>();
-            List<String> perfis = jwt.getClaimAsStringList("perfis");
-            List<String> permissoes = jwt.getClaimAsStringList("permissoes");
+
+            Collection<GrantedAuthority> authorities =
+                    new ArrayList<>();
+
+            List<String> perfis =
+                    jwt.getClaimAsStringList("perfis");
+
+            List<String> permissoes =
+                    jwt.getClaimAsStringList("permissoes");
 
             if (perfis != null) {
                 perfis.stream()
-                        .map(perfil -> new SimpleGrantedAuthority("ROLE_" + perfil.toUpperCase()))
+                        .map(perfil ->
+                                new SimpleGrantedAuthority(
+                                        "ROLE_" + perfil.toUpperCase()))
                         .forEach(authorities::add);
             }
+
             if (permissoes != null) {
                 permissoes.stream()
                         .map(SimpleGrantedAuthority::new)
                         .forEach(authorities::add);
             }
+
             return authorities;
         });
+
         return converter;
     }
 
+
     @Bean
     BearerTokenResolver bearerTokenResolver() {
-        DefaultBearerTokenResolver delegate = new DefaultBearerTokenResolver();
-        return request -> isGoogleAuthenticationEndpoint(request) ? null : delegate.resolve(request);
+
+        DefaultBearerTokenResolver delegate =
+                new DefaultBearerTokenResolver();
+
+        return request ->
+                isGoogleAuthenticationEndpoint(request)
+                        ? null
+                        : delegate.resolve(request);
     }
 
-    private boolean isGoogleAuthenticationEndpoint(HttpServletRequest request) {
+
+    private boolean isGoogleAuthenticationEndpoint(
+            HttpServletRequest request) {
+
         return "/api/auth/google".equals(request.getRequestURI())
-            || "/api/auth/google/id-token".equals(request.getRequestURI())
-            || "/api/auth/google/token".equals(request.getRequestURI());
+                || "/api/auth/google/id-token".equals(request.getRequestURI())
+                || "/api/auth/google/token".equals(request.getRequestURI());
     }
+
 
     @Bean
     UserDetailsService monitoringUserDetailsService() {
+
         return new InMemoryUserDetailsManager(
                 User.withUsername(monitoringUsername)
                         .password("{noop}" + monitoringPassword)
                         .roles("MONITORING")
-                        .build());
+                        .build()
+        );
     }
+
+
+    /*
+     * ============================================================
+     * CORS
+     * ============================================================
+     */
 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isBlank())
-                .toList());
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept"));
+
+        CorsConfiguration configuration =
+                new CorsConfiguration();
+
+        configuration.setAllowedOrigins(
+                Arrays.stream(allowedOrigins.split(","))
+                        .map(String::trim)
+                        .filter(origin -> !origin.isBlank())
+                        .toList()
+        );
+
+        configuration.setAllowedMethods(
+                Arrays.asList(
+                        "GET",
+                        "POST",
+                        "PUT",
+                        "PATCH",
+                        "DELETE",
+                        "OPTIONS"
+                )
+        );
+
+        configuration.setAllowedHeaders(
+                Arrays.asList(
+                        "Authorization",
+                        "Content-Type",
+                        "Accept"
+                )
+        );
+
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
         source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 }
