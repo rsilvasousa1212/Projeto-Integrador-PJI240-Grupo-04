@@ -34,10 +34,10 @@ public class Usuario {
     @Column(nullable = false)
     private Boolean ativo = true;
 
-    @Column(name = "criado_em", updatable = false)
+    @Column(name = "criado_em", nullable = false, updatable = false)
     private OffsetDateTime criadoEm;
 
-    @Column(name = "atualizado_em")
+    @Column(name = "atualizado_em", nullable = false)
     private OffsetDateTime atualizadoEm;
 
     @Builder.Default
@@ -53,4 +53,16 @@ public class Usuario {
             joinColumns = @JoinColumn(name = "usuario_id"),
             inverseJoinColumns = @JoinColumn(name = "unidade_id"))
     private Set<Unidade> unidades = new HashSet<>();
+
+    @PrePersist
+    protected void onCreate() {
+        OffsetDateTime now = OffsetDateTime.now();
+        criadoEm = now;
+        atualizadoEm = now;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        atualizadoEm = OffsetDateTime.now();
+    }
 }
