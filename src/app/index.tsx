@@ -15,52 +15,80 @@ import {
 
 import { api } from '../services/api';
 
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
+
 WebBrowser.maybeCompleteAuthSession();
+
+if (Platform.OS !== 'web') {
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+}
 
 export default function LoginScreen() {
   const router = useRouter();
 
   const handleGoogleLogin = async () => {
     try {
-      const redirectUri = AuthSession.makeRedirectUri();
-      
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-        `client_id=${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}` +
-        `&response_type=id_token` +
-        `&redirect_uri=${encodeURIComponent(redirectUri)}` +
-        `&scope=openid%20email%20profile` +
-        `&nonce=default_nonce`;
+      let idToken: string | null | undefined = null;
 
-      const response = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      if (Platform.OS === 'web') {
+        // Fluxo para Web (Navegador)
+        const redirectUri = AuthSession.makeRedirectUri();
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+          `client_id=${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}` +
+          `&response_type=id_token` +
+          `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+          `&scope=openid%20email%20profile` +
+          `&nonce=default_nonce`;
 
-      if (response.type === 'success' && response.url) {
-        const urlParams = new URLSearchParams(
-          response.url.split('#')[1] || response.url.split('?')[1]
-        );
-        const idToken = urlParams.get('id_token');
+        const response = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
-        if (!idToken) {
-          Alert.alert('Erro', 'Falha ao autenticar.');
-          return;
+        if (response.type === 'success' && response.url) {
+          const urlParams = new URLSearchParams(
+            response.url.split('#')[1] || response.url.split('?')[1]
+          );
+          idToken = urlParams.get('id_token');
+        } else if (response.type !== 'cancel') {
+           Alert.alert('Aviso', 'O login não foi concluído.');
+           return;
+        } else {
+           return;
         }
-
-        const apiResponse = await api.post('/auth/google/id-token', {
-          idToken: idToken
-        });
-
-        // Salvar token retornado pela API futuramente aqui
-        // const { accessToken } = apiResponse.data;
-
-        router.replace('/materiais');
-      } else if (response.type !== 'cancel') {
-         Alert.alert('Aviso', 'O login não foi concluído.');
+      } else {
+        // Fluxo Nativo (Android APK / iOS)
+        await GoogleSignin.hasPlayServices();
+        const userInfo = await GoogleSignin.signIn();
+        idToken = userInfo.data?.idToken;
       }
+
+      if (!idToken) {
+        Alert.alert('Erro', 'Falha ao recuperar o token do Google.');
+        return;
+      }
+
+      const apiResponse = await api.post('/auth/google/id-token', {
+        idToken: idToken
+      });
+
+      // Salvar token retornado pela API futuramente aqui
+      // const { accessToken } = apiResponse.data;
+
+      router.replace('/materiais');
+
     } catch (error: any) {
-      console.error(error);
-      Alert.alert(
-        'Erro', 
-        error?.response?.data?.message || 'Falha ao conectar no servidor.'
-      );
+      console.warn('Erro ao autenticar com o backend:', error?.response?.status, error?.message);
+      
+      let mensagem = 'Falha ao conectar no servidor.';
+      if (error?.response?.status === 503) {
+        mensagem = 'O servidor do backend (Cloud Run) está temporariamente indisponível (Erro 503). Verifique se a API está ativa no Google Cloud.';
+      } else if (error?.response?.data?.message) {
+        mensagem = error.response.data.message;
+      } else if (error?.message) {
+        mensagem = error.message;
+      }
+
+      Alert.alert('Erro de Conexão', mensagem);
     }
   };
 
@@ -79,12 +107,12 @@ export default function LoginScreen() {
         </View>
 
         <Text style={styles.title}>Gestão de Patrimônio</Text>
-        <Text style={styles.subtitle}>Acesse o sistema com sua conta corporativa para gerenciar equipamentos e setores.</Text>
+        <Text style={styles.subtitle}>Acesse o sistema com sua conta corporativa para gerenciar equipamentos</Text>
 
         <View style={styles.divider} />
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin} activeOpacity={0.8}>
-          <AntDesign name="google" size={22} color="#DB4437" style={styles.googleIcon} />
+          <AntDesign name="google" size={22} color="#ffffff" style={styles.googleIcon} />
           <Text style={styles.googleButtonText}>Entrar com o Google</Text>
         </TouchableOpacity>
 
@@ -147,7 +175,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   googleButton: {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#0f172a',
     width: '100%',
     height: 55,
     borderRadius: 12,
@@ -166,7 +194,7 @@ const styles = StyleSheet.create({
     marginRight: 12, 
   },
   googleButtonText: {
-    color: '#334155',
+    color: '#ffffff',
     fontSize: 17,
     fontWeight: '700',
   },
