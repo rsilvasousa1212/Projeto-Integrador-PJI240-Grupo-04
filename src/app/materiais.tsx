@@ -196,7 +196,11 @@ export default function ListagemScreen() {
 
       {/* BOTÃO FLUTUANTE DE ADICIONAR SÓ APARECE PARA ADMIN */}
       {perfil === 'ADMIN' && (
-        <TouchableOpacity style={styles.fab} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.fab} 
+          activeOpacity={0.8}
+          onPress={() => router.push('/novo-patrimonio' as any)}
+        >
           <AntDesign name="plus" size={24} color="#fff" />
         </TouchableOpacity>
       )}
