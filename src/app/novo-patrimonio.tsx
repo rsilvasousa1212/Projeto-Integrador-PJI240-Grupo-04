@@ -17,16 +17,12 @@ const CATEGORIAS = ['Equipamento Médico', 'Mobiliário', 'Informática'];
 const SETORES = ['UTI Adulto', 'Pronto Socorro', 'Enfermaria Pediátrica', 'Ambulatório', 'Almoxarifado Central'];
 const RESPONSAVEIS = [
   'Não atribuído',
-  'Dr. Renato Silva',
-  'Enf. Carlos Almeida',
-  'Dra. Mariana Costa',
-  'João Silva (Almoxarifado)',
+  'Pendente de definição',
 ];
 
 export default function NovoPatrimonioScreen() {
   const router = useRouter();
 
-  // Estados do formulário
   const [nome, setNome] = useState('');
   const [tombamento, setTombamento] = useState('');
   const [categoria, setCategoria] = useState(CATEGORIAS[0]);
@@ -44,11 +40,9 @@ export default function NovoPatrimonioScreen() {
       return;
     }
 
-    // TODO: Quando o endpoint POST /api/patrimonios estiver pronto no Java,
-    // enviaremos os dados para a API aqui.
     Alert.alert(
-      'Sucesso!',
-      `Patrimônio "${nome}" (Tombamento: ${tombamento}) cadastrado com sucesso e vinculado a ${responsavel}!`,
+      'Sucesso',
+      `Patrimônio "${nome}" cadastrado com sucesso!`,
       [
         {
           text: 'OK',
@@ -63,7 +57,6 @@ export default function NovoPatrimonioScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.container}
     >
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <AntDesign name="arrow-left" size={24} color="#fff" />
@@ -73,7 +66,6 @@ export default function NovoPatrimonioScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        {/* SEÇÃO 1: DADOS DO BEM */}
         <View style={styles.cardSection}>
           <Text style={styles.sectionHeader}>
             <Feather name="box" size={16} color="#1e3a8a" /> Identificação do Equipamento
@@ -146,7 +138,6 @@ export default function NovoPatrimonioScreen() {
           />
         </View>
 
-        {/* SEÇÃO 2: LOCALIZAÇÃO E RESPONSABILIDADE */}
         <View style={styles.cardSection}>
           <Text style={styles.sectionHeader}>
             <Feather name="map-pin" size={16} color="#1e3a8a" /> Localização & Responsável
@@ -189,7 +180,6 @@ export default function NovoPatrimonioScreen() {
           </View>
         </View>
 
-        {/* SEÇÃO 3: VALOR E OBSERVAÇÕES */}
         <View style={styles.cardSection}>
           <Text style={styles.sectionHeader}>
             <MaterialIcons name="attach-money" size={18} color="#1e3a8a" /> Informações Contábeis
@@ -217,7 +207,6 @@ export default function NovoPatrimonioScreen() {
           />
         </View>
 
-        {/* BOTÃO SALVAR */}
         <TouchableOpacity style={styles.saveButton} onPress={handleSalvar} activeOpacity={0.8}>
           <AntDesign name="check" size={20} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.saveButtonText}>Cadastrar Patrimônio</Text>

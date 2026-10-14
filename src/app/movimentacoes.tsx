@@ -10,15 +10,15 @@ import {
   View
 } from 'react-native';
 
-const MOCK_MOVIMENTACOES = [
+const DADOS_MOVIMENTACOES = [
   { 
     id: '1', 
     numero: '2026/14788', 
     material: 'Monitor de Sinais Vitais Philips', 
     origem: 'Almoxarifado Central', 
-    responsavelOrigem: 'Renato Silva',
+    responsavelOrigem: 'Não atribuído',
     destino: 'UTI Adulto', 
-    responsavelDestino: 'Dr. Carlos Almeida',
+    responsavelDestino: 'Não atribuído',
     dataEnvio: '29/09/2026', 
     status: 'Aguardando Aprovação' 
   },
@@ -27,9 +27,9 @@ const MOCK_MOVIMENTACOES = [
     numero: '2026/14789', 
     material: 'Cadeira de Rodas Dobrável', 
     origem: 'Pronto Socorro', 
-    responsavelOrigem: 'Enf. Mariana Costa',
+    responsavelOrigem: 'Não atribuído',
     destino: 'Enfermaria Pediátrica', 
-    responsavelDestino: 'Dra. Ana Beatriz',
+    responsavelDestino: 'Não atribuído',
     dataEnvio: '01/10/2026', 
     status: 'Aprovado' 
   },
@@ -38,9 +38,9 @@ const MOCK_MOVIMENTACOES = [
     numero: '2026/14790', 
     material: 'Desfibrilador Externo Automático', 
     origem: 'Ambulatório', 
-    responsavelOrigem: 'Sem responsável',
+    responsavelOrigem: 'Não atribuído',
     destino: 'Almoxarifado Central', 
-    responsavelDestino: 'João Silva',
+    responsavelDestino: 'Não atribuído',
     dataEnvio: '02/10/2026', 
     status: 'Recusado' 
   },
@@ -61,7 +61,7 @@ export default function MovimentacoesScreen() {
     }
   };
 
-  const movimentacoesFiltradas = MOCK_MOVIMENTACOES.filter(mov => {
+  const movimentacoesFiltradas = DADOS_MOVIMENTACOES.filter(mov => {
     if (abaAtiva === 'Aguardando') return mov.status === 'Aguardando Aprovação';
     if (abaAtiva === 'Concluídas') return mov.status === 'Aprovado' || mov.status === 'Recusado';
     return true;
@@ -69,16 +69,14 @@ export default function MovimentacoesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <AntDesign name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Movimentações</Text>
-        <View style={{ width: 40 }} /> {/* Espaçador para centralizar título */}
+        <View style={{ width: 40 }} />
       </View>
 
-      {/* ABAS SUPERIORES */}
       <View style={styles.tabsContainer}>
         {ABAS.map(aba => (
           <TouchableOpacity 
@@ -91,7 +89,6 @@ export default function MovimentacoesScreen() {
         ))}
       </View>
 
-      {/* LISTAGEM DOS CARTÕES DE TRANSFERÊNCIA */}
       <FlatList
         data={movimentacoesFiltradas}
         keyExtractor={(item) => item.id}

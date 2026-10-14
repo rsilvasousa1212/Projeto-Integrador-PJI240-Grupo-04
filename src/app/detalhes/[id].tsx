@@ -2,8 +2,7 @@ import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-// Mock de detalhes ricos que simularemos da API futuramente
-const DETALHES_MOCKADOS: Record<string, any> = {
+const DETALHES_PATRIMONIOS: Record<string, any> = {
   '1': {
     id: '1',
     nome: 'Monitor de Sinais Vitais Philips',
@@ -44,10 +43,9 @@ export default function DetalhesScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  // Se não encontrar no Mock (para os itens 3 e 4), usa um genérico
-  const item = DETALHES_MOCKADOS[id as string] || {
+  const item = DETALHES_PATRIMONIOS[id as string] || {
     id,
-    nome: 'Patrimônio não detalhado no Mock',
+    nome: 'Equipamento Hospitalar',
     tombamento: `202300${id}`,
     numeroSerie: 'N/A',
     marca: 'N/A',
@@ -60,7 +58,7 @@ export default function DetalhesScreen() {
     responsavel: 'Não atribuído',
     dataAquisicao: 'N/A',
     valorAquisicao: 'R$ 0,00',
-    observacao: 'Sem observações.',
+    observacao: 'Sem observações adicionais.',
   };
 
   const getStatusColor = (status: string) => {
@@ -83,7 +81,6 @@ export default function DetalhesScreen() {
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <AntDesign name="arrow-left" size={24} color="#fff" />
@@ -93,7 +90,6 @@ export default function DetalhesScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* CABEÇALHO DO ITEM */}
         <View style={styles.topCard}>
           <View style={styles.topCardHeader}>
             <View style={styles.iconWrapper}>
@@ -108,7 +104,6 @@ export default function DetalhesScreen() {
           <Text style={styles.tombamento}>Nº de Tombamento: <Text style={{ color: '#0f172a' }}>{item.tombamento}</Text></Text>
         </View>
 
-        {/* BLOCO: RESPONSÁVEL */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Responsabilidade</Text>
           <View style={styles.infoRow}>
@@ -120,7 +115,6 @@ export default function DetalhesScreen() {
           </View>
         </View>
 
-        {/* BLOCO: LOCALIZAÇÃO */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Localização Física</Text>
           <View style={styles.infoRow}>
@@ -133,7 +127,6 @@ export default function DetalhesScreen() {
           </View>
         </View>
 
-        {/* BLOCO: IDENTIFICAÇÃO E AQUISIÇÃO */}
         <View style={styles.gridSection}>
           <View style={styles.gridBox}>
             <Text style={styles.infoLabel}>Marca</Text>
@@ -161,13 +154,11 @@ export default function DetalhesScreen() {
           </View>
         </View>
 
-        {/* BLOCO: OBSERVAÇÕES */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Observações</Text>
           <Text style={styles.observacaoText}>{item.observacao}</Text>
         </View>
 
-        {/* BOTÕES DE AÇÃO */}
         <View style={styles.actionContainer}>
           <TouchableOpacity style={styles.transferButton}>
             <Feather name="repeat" size={18} color="#fff" />

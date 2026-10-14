@@ -12,8 +12,7 @@ import {
   View
 } from 'react-native';
 
-// TODO: Remover isso quando a rota /patrimonios for criada no backend Java
-const DADOS_MOCKADOS = [
+const DADOS_PATRIMONIOS = [
   { id: '1', nome: 'Monitor de Sinais Vitais Philips', tombamento: '2023001', setor: 'UTI Adulto', status: 'Ativo', categoria: 'Equipamento Médico', responsavel: 'Não atribuído' },
   { id: '2', nome: 'Cadeira de Rodas Dobrável', tombamento: '2023002', setor: 'Pronto Socorro', status: 'Em Manutenção', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
   { id: '3', nome: 'Maca Hospitalar Articulada', tombamento: '2023003', setor: 'Enfermaria Pediátrica', status: 'Ativo', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
@@ -23,11 +22,8 @@ const DADOS_MOCKADOS = [
 const CATEGORIAS = ['Todos', 'Equipamento Médico', 'Mobiliário', 'Informática'];
 
 export default function ListagemScreen() {
-  // LÓGICA DE PERFIL (Simulando a resposta do Backend)
   const [perfil, setPerfil] = useState<'ADMIN' | 'USER'>('ADMIN');
-  const usuarioLogado = 'Dr. Renato Silva'; // Simulando quem é a pessoa logada
-
-  const [bens, setBens] = useState(DADOS_MOCKADOS);
+  const [bens, setBens] = useState(DADOS_PATRIMONIOS);
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
@@ -41,9 +37,7 @@ export default function ListagemScreen() {
     setPerfil(prev => prev === 'ADMIN' ? 'USER' : 'ADMIN');
   };
 
-  // Lógica de Filtro
   const bensFiltrados = bens.filter((item) => {
-    // 2. Filtros normais da tela
     const bateBusca = item.nome.toLowerCase().includes(busca.toLowerCase()) || 
                       item.tombamento.includes(busca) || 
                       item.responsavel.toLowerCase().includes(busca.toLowerCase());
@@ -72,12 +66,11 @@ export default function ListagemScreen() {
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
       <View style={styles.header}>
         <View>
           <Text style={styles.headerTitle}>Bens Patrimoniais</Text>
           <Text style={styles.headerSubtitle}>
-            {perfil === 'ADMIN' ? 'Visão: Administrador (Pode Editar)' : `Visão: Leitura (Apenas Consulta)`}
+            {perfil === 'ADMIN' ? 'Visão: Administrador' : 'Visão: Consulta'}
           </Text>
         </View>
 
@@ -100,7 +93,6 @@ export default function ListagemScreen() {
         </View>
       </View>
 
-      {/* BARRA DE PESQUISA */}
       <View style={styles.searchContainer}>
         <View style={styles.searchInputWrapper}>
           <Feather name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
@@ -119,7 +111,6 @@ export default function ListagemScreen() {
         </View>
       </View>
 
-      {/* FILTROS DE CATEGORIA (SCROLL HORIZONTAL) */}
       <View style={styles.filtersContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
           {CATEGORIAS.map((cat) => (
@@ -136,7 +127,6 @@ export default function ListagemScreen() {
         </ScrollView>
       </View>
 
-      {/* LISTAGEM */}
       {loading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#1e3a8a" />
@@ -196,7 +186,6 @@ export default function ListagemScreen() {
         />
       )}
 
-      {/* BOTÃO FLUTUANTE DE ADICIONAR SÓ APARECE PARA ADMIN */}
       {perfil === 'ADMIN' && (
         <TouchableOpacity 
           style={styles.fab} 

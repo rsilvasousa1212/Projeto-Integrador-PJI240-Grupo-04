@@ -33,7 +33,6 @@ export default function LoginScreen() {
       let idToken: string | null | undefined = null;
 
       if (Platform.OS === 'web') {
-        // Fluxo para Web (Navegador)
         const redirectUri = AuthSession.makeRedirectUri();
         const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
           `client_id=${process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID}` +
@@ -50,13 +49,12 @@ export default function LoginScreen() {
           );
           idToken = urlParams.get('id_token');
         } else if (response.type !== 'cancel') {
-           Alert.alert('Aviso', 'O login não foi concluído.');
-           return;
+          Alert.alert('Aviso', 'O login não foi concluído.');
+          return;
         } else {
-           return;
+          return;
         }
       } else {
-        // Fluxo Nativo (Android APK / iOS)
         await GoogleSignin.hasPlayServices();
         const userInfo = await GoogleSignin.signIn();
         idToken = userInfo.data?.idToken;
@@ -67,21 +65,18 @@ export default function LoginScreen() {
         return;
       }
 
-      const apiResponse = await api.post('/auth/google/id-token', {
+      await api.post('/auth/google/id-token', {
         idToken: idToken
       });
-
-      // Salvar token retornado pela API futuramente aqui
-      // const { accessToken } = apiResponse.data;
 
       router.replace('/materiais');
 
     } catch (error: any) {
-      console.warn('Erro ao autenticar com o backend:', error?.response?.status, error?.message);
+      console.warn('Erro na autenticação:', error?.response?.status, error?.message);
       
       let mensagem = 'Falha ao conectar no servidor.';
       if (error?.response?.status === 503) {
-        mensagem = 'O servidor do backend (Cloud Run) está temporariamente indisponível (Erro 503). Verifique se a API está ativa no Google Cloud.';
+        mensagem = 'O servidor está temporariamente indisponível. Tente novamente em instantes.';
       } else if (error?.response?.data?.message) {
         mensagem = error.response.data.message;
       } else if (error?.message) {
