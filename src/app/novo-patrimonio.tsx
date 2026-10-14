@@ -16,6 +16,7 @@ import {
 const CATEGORIAS = ['Equipamento Médico', 'Mobiliário', 'Informática'];
 const SETORES = ['UTI Adulto', 'Pronto Socorro', 'Enfermaria Pediátrica', 'Ambulatório', 'Almoxarifado Central'];
 const RESPONSAVEIS = [
+  'Não atribuído',
   'Dr. Renato Silva',
   'Enf. Carlos Almeida',
   'Dra. Mariana Costa',

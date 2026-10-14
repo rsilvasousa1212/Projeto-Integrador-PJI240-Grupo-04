@@ -14,10 +14,10 @@ import {
 
 // TODO: Remover isso quando a rota /patrimonios for criada no backend Java
 const DADOS_MOCKADOS = [
-  { id: '1', nome: 'Monitor de Sinais Vitais Philips', tombamento: '2023001', setor: 'UTI Adulto', status: 'Ativo', categoria: 'Equipamento Médico', responsavel: 'Dr. Renato Silva' },
-  { id: '2', nome: 'Cadeira de Rodas Dobrável', tombamento: '2023002', setor: 'Pronto Socorro', status: 'Em Manutenção', categoria: 'Mobiliário', responsavel: 'Enf. Carlos Almeida' },
-  { id: '3', nome: 'Maca Hospitalar Articulada', tombamento: '2023003', setor: 'Enfermaria Pediátrica', status: 'Ativo', categoria: 'Mobiliário', responsavel: 'Dra. Mariana Costa' },
-  { id: '4', nome: 'Desfibrilador Externo Automático', tombamento: '2023004', setor: 'Ambulatório', status: 'Baixado', categoria: 'Equipamento Médico', responsavel: 'Sem responsável' },
+  { id: '1', nome: 'Monitor de Sinais Vitais Philips', tombamento: '2023001', setor: 'UTI Adulto', status: 'Ativo', categoria: 'Equipamento Médico', responsavel: 'Não atribuído' },
+  { id: '2', nome: 'Cadeira de Rodas Dobrável', tombamento: '2023002', setor: 'Pronto Socorro', status: 'Em Manutenção', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
+  { id: '3', nome: 'Maca Hospitalar Articulada', tombamento: '2023003', setor: 'Enfermaria Pediátrica', status: 'Ativo', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
+  { id: '4', nome: 'Desfibrilador Externo Automático', tombamento: '2023004', setor: 'Ambulatório', status: 'Baixado', categoria: 'Equipamento Médico', responsavel: 'Não atribuído' },
 ];
 
 const CATEGORIAS = ['Todos', 'Equipamento Médico', 'Mobiliário', 'Informática'];
@@ -106,7 +106,7 @@ export default function ListagemScreen() {
           <Feather name="search" size={20} color="#94a3b8" style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Buscar bem, tombamento ou responsável..."
+            placeholder="Buscar bem ou nº de tombamento..."
             placeholderTextColor="#94a3b8"
             value={busca}
             onChangeText={setBusca}
@@ -167,8 +167,10 @@ export default function ListagemScreen() {
                   </View>
 
                   <View style={styles.responsavelRow}>
-                    <Feather name="user" size={14} color="#64748b" />
-                    <Text style={styles.responsavelText}>{item.responsavel}</Text>
+                    <Feather name="user" size={13} color="#94a3b8" />
+                    <Text style={[styles.responsavelText, { color: '#94a3b8', fontStyle: 'italic' }]}>
+                      {item.responsavel}
+                    </Text>
                   </View>
 
                   <View style={styles.badgesRow}>
