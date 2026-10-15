@@ -2,6 +2,7 @@ import { AntDesign } from '@expo/vector-icons';
 import * as AuthSession from 'expo-auth-session';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
+import { useEffect } from 'react';
 import {
   Alert,
   Image,
@@ -17,7 +18,7 @@ import { api } from '../services/api';
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession({ skipRedirectCheck: true });
 
 if (Platform.OS !== 'web') {
   GoogleSignin.configure({
@@ -27,6 +28,25 @@ if (Platform.OS !== 'web') {
 
 export default function LoginScreen() {
   const router = useRouter();
+
+  useEffect(() => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const hash = window.location.hash || window.location.search;
+      if (hash && (hash.includes('id_token=') || hash.includes('&id_token='))) {
+        const params = new URLSearchParams(hash.replace(/^[#?]/, ''));
+        const token = params.get('id_token');
+        if (token) {
+          api.post('/auth/google/id-token', { idToken: token })
+            .then(() => {
+              router.replace('/materiais');
+            })
+            .catch((err) => {
+              console.warn('Erro ao autenticar token da URL:', err);
+            });
+        }
+      }
+    }
+  }, []);
 
   const handleGoogleLogin = async () => {
     try {
