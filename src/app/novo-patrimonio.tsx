@@ -1,6 +1,6 @@
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   KeyboardAvoidingView,
@@ -13,11 +13,21 @@ import {
   View
 } from 'react-native';
 
-const CATEGORIAS = ['Equipamento Médico', 'Mobiliário', 'Informática'];
-const SETORES = ['UTI Adulto', 'Pronto Socorro', 'Enfermaria Pediátrica', 'Ambulatório', 'Almoxarifado Central'];
-const RESPONSAVEIS = [
-  'Não atribuído',
-  'Pendente de definição',
+import { SeletorResponsavelModal } from '../components/SeletorResponsavelModal';
+import { adicionarNovoPatrimonio } from '../services/patrimonioService';
+import { ServidorPublico } from '../services/servidoresService';
+
+const CATEGORIAS = ['Informática', 'Equipamentos de Saúde', 'Mobiliário', 'Climatização e Apoio'];
+const SETORES = [
+  'Almoxarifado Central - Sede SMS',
+  'Departamento de TI - Sede SMS',
+  'Central de Regulação e Vagas',
+  'Vigilância Sanitária e Epidemiológica',
+  'Farmácia Central Municipal',
+  'UBS Eldorado - Sala de Vacinas',
+  'UBS Centro - Recepção e Prontuários',
+  'UBS Piraporinha - Central de Esterilização',
+  'UBS Serraria - Triagem',
 ];
 
 export default function NovoPatrimonioScreen() {
@@ -30,7 +40,9 @@ export default function NovoPatrimonioScreen() {
   const [modelo, setModelo] = useState('');
   const [numeroSerie, setNumeroSerie] = useState('');
   const [setor, setSetor] = useState(SETORES[0]);
-  const [responsavel, setResponsavel] = useState(RESPONSAVEIS[0]);
+  const [responsavel, setResponsavel] = useState('Não atribuído');
+  const [responsavelDetalhes, setResponsavelDetalhes] = useState<ServidorPublico | null>(null);
+  const [modalResponsavelVisivel, setModalResponsavelVisivel] = useState(false);
   const [valorAquisicao, setValorAquisicao] = useState('');
   const [observacao, setObservacao] = useState('');
 
@@ -39,6 +51,20 @@ export default function NovoPatrimonioScreen() {
       Alert.alert('Campos Obrigatórios', 'Por favor, preencha pelo menos o Nome e o Número de Tombamento.');
       return;
     }
+
+    adicionarNovoPatrimonio({
+      nome: nome.trim(),
+      tombamento: tombamento.trim(),
+      categoria,
+      marca: marca.trim() || 'N/A',
+      modelo: modelo.trim() || 'N/A',
+      numeroSerie: numeroSerie.trim() || 'N/A',
+      setor,
+      responsavel,
+      responsavelDetalhes,
+      valorAquisicao: valorAquisicao.trim() || 'R$ 0,00',
+      observacao: observacao.trim() || 'Cadastrado no sistema de gestão patrimonial.',
+    });
 
     Alert.alert(
       'Sucesso',
@@ -74,7 +100,7 @@ export default function NovoPatrimonioScreen() {
           <Text style={styles.label}>Nome / Descrição *</Text>
           <TextInput
             style={styles.input}
-            placeholder="Ex: Eletrocardiógrafo 12 Canais"
+            placeholder="Ex: Câmara de Vacinas 280L ou Computador Desktop"
             placeholderTextColor="#94a3b8"
             value={nome}
             onChangeText={setNome}
@@ -110,7 +136,7 @@ export default function NovoPatrimonioScreen() {
               <Text style={styles.label}>Marca</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Ex: Philips"
+                placeholder="Ex: Dell, Indrel"
                 placeholderTextColor="#94a3b8"
                 value={marca}
                 onChangeText={setMarca}
@@ -120,7 +146,7 @@ export default function NovoPatrimonioScreen() {
               <Text style={styles.label}>Modelo</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Ex: PageWriter TC30"
+                placeholder="Ex: OptiPlex 3000"
                 placeholderTextColor="#94a3b8"
                 value={modelo}
                 onChangeText={setModelo}
@@ -158,26 +184,47 @@ export default function NovoPatrimonioScreen() {
             ))}
           </View>
 
-          <Text style={[styles.label, { marginTop: 15 }]}>Responsável pelo Bem</Text>
-          <View style={styles.chipWrap}>
-            {RESPONSAVEIS.map((r) => (
-              <TouchableOpacity
-                key={r}
-                style={[styles.chipResponsavel, responsavel === r && styles.chipResponsavelActive]}
-                onPress={() => setResponsavel(r)}
-              >
-                <Feather
-                  name="user"
-                  size={14}
-                  color={responsavel === r ? '#fff' : '#64748b'}
-                  style={{ marginRight: 6 }}
-                />
-                <Text style={[styles.chipText, responsavel === r && styles.chipTextActive]}>
-                  {r}
+          <Text style={[styles.label, { marginTop: 15 }]}>Responsável pelo Bem (Custódia)</Text>
+          {responsavelDetalhes ? (
+            <View style={styles.servidorSelecionadoCard}>
+              <View style={styles.avatarMiniCircle}>
+                <Text style={styles.avatarMiniInitial}>{responsavelDetalhes.nome.charAt(0)}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.servidorSelecionadoNome}>{responsavelDetalhes.nome}</Text>
+                <Text style={styles.servidorSelecionadoSub}>
+                  {responsavelDetalhes.cargo} • {responsavelDetalhes.setor}
                 </Text>
+                <Text style={styles.servidorSelecionadoMeta}>
+                  Matrícula: {responsavelDetalhes.matricula} • {responsavelDetalhes.email}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.btnTrocarServidor}
+                onPress={() => setModalResponsavelVisivel(true)}
+              >
+                <Feather name="edit-2" size={15} color="#1e3a8a" />
               </TouchableOpacity>
-            ))}
-          </View>
+              <TouchableOpacity
+                style={styles.btnRemoverServidor}
+                onPress={() => {
+                  setResponsavel('Não atribuído');
+                  setResponsavelDetalhes(null);
+                }}
+              >
+                <Feather name="x" size={16} color="#dc2626" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <TouchableOpacity
+              style={styles.btnBuscarServidor}
+              onPress={() => setModalResponsavelVisivel(true)}
+              activeOpacity={0.7}
+            >
+              <Feather name="search" size={16} color="#1e3a8a" style={{ marginRight: 8 }} />
+              <Text style={styles.btnBuscarServidorText}>Pesquisar e Atribuir Servidor</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.cardSection}>
@@ -212,6 +259,20 @@ export default function NovoPatrimonioScreen() {
           <Text style={styles.saveButtonText}>Cadastrar Patrimônio</Text>
         </TouchableOpacity>
       </ScrollView>
+      <SeletorResponsavelModal
+        visible={modalResponsavelVisivel}
+        onClose={() => setModalResponsavelVisivel(false)}
+        responsavelAtualNome={responsavel}
+        onSelect={(servidor) => {
+          if (servidor) {
+            setResponsavel(servidor.nome);
+            setResponsavelDetalhes(servidor);
+          } else {
+            setResponsavel('Não atribuído');
+            setResponsavelDetalhes(null);
+          }
+        }}
+      />
     </KeyboardAvoidingView>
   );
 }
@@ -283,19 +344,75 @@ const styles = StyleSheet.create({
     borderColor: '#e2e8f0',
   },
   chipActive: { backgroundColor: '#1e3a8a', borderColor: '#1e3a8a' },
-  chipResponsavel: {
-    backgroundColor: '#f1f5f9',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  chipResponsavelActive: { backgroundColor: '#1e3a8a', borderColor: '#1e3a8a' },
   chipText: { fontSize: 13, color: '#64748b', fontWeight: '600' },
   chipTextActive: { color: '#ffffff' },
+
+  btnBuscarServidor: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eff6ff',
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+    borderColor: '#93c5fd',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  btnBuscarServidorText: {
+    color: '#1e3a8a',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  servidorSelecionadoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    borderRadius: 12,
+    padding: 12,
+  },
+  avatarMiniCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#1e3a8a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+  },
+  avatarMiniInitial: {
+    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '700',
+  },
+  servidorSelecionadoNome: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  servidorSelecionadoSub: {
+    fontSize: 12,
+    color: '#475569',
+    marginTop: 2,
+  },
+  servidorSelecionadoMeta: {
+    fontSize: 11,
+    color: '#94a3b8',
+    marginTop: 2,
+  },
+  btnTrocarServidor: {
+    padding: 8,
+    backgroundColor: '#eff6ff',
+    borderRadius: 8,
+    marginRight: 6,
+  },
+  btnRemoverServidor: {
+    padding: 8,
+    backgroundColor: '#fee2e2',
+    borderRadius: 8,
+  },
 
   saveButton: {
     backgroundColor: '#1e3a8a',

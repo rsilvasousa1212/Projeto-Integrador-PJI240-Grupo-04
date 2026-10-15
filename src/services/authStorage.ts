@@ -79,8 +79,8 @@ export const getUser = (): UserProfile => {
     } catch {}
   }
   return {
-    name: 'Usuário Conectado',
-    email: 'usuario@gestao.patrimonio',
+    name: 'Servidor Municipal',
+    email: 'gestao.patrimonio@saude.diadema.sp.gov.br',
     role: 'ADMIN',
   };
 };

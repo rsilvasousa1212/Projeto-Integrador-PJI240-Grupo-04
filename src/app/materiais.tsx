@@ -16,21 +16,15 @@ import {
 } from 'react-native';
 
 import { clearUser, getUser, updateUserRole, UserProfile } from '../services/authStorage';
+import { BemPatrimonial, obterTodosPatrimonios } from '../services/patrimonioService';
 
-const DADOS_PATRIMONIOS = [
-  { id: '1', nome: 'Monitor de Sinais Vitais Philips', tombamento: '2023001', setor: 'UTI Adulto', status: 'Ativo', categoria: 'Equipamento Médico', responsavel: 'Não atribuído' },
-  { id: '2', nome: 'Cadeira de Rodas Dobrável', tombamento: '2023002', setor: 'Pronto Socorro', status: 'Em Manutenção', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
-  { id: '3', nome: 'Maca Hospitalar Articulada', tombamento: '2023003', setor: 'Enfermaria Pediátrica', status: 'Ativo', categoria: 'Mobiliário', responsavel: 'Não atribuído' },
-  { id: '4', nome: 'Desfibrilador Externo Automático', tombamento: '2023004', setor: 'Ambulatório', status: 'Baixado', categoria: 'Equipamento Médico', responsavel: 'Não atribuído' },
-];
-
-const CATEGORIAS = ['Todos', 'Equipamento Médico', 'Mobiliário', 'Informática'];
+const CATEGORIAS = ['Todos', 'Informática', 'Equipamentos de Saúde', 'Mobiliário', 'Climatização e Apoio'];
 
 export default function ListagemScreen() {
   const [usuario, setUsuario] = useState<UserProfile>(getUser());
   const [perfil, setPerfil] = useState<'ADMIN' | 'USER'>(usuario.role || 'ADMIN');
   const [modalPerfilVisivel, setModalPerfilVisivel] = useState(false);
-  const [bens, setBens] = useState(DADOS_PATRIMONIOS);
+  const [bens, setBens] = useState<BemPatrimonial[]>(() => obterTodosPatrimonios());
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
@@ -40,6 +34,13 @@ export default function ListagemScreen() {
     const u = getUser();
     setUsuario(u);
     setPerfil(u.role || 'ADMIN');
+    setBens(obterTodosPatrimonios());
+
+    if (Platform.OS === 'web' && typeof window !== 'undefined') {
+      const recarregar = () => setBens(obterTodosPatrimonios());
+      window.addEventListener('focus', recarregar);
+      return () => window.removeEventListener('focus', recarregar);
+    }
   }, []);
 
   const handleLogout = async () => {
@@ -77,9 +78,10 @@ export default function ListagemScreen() {
 
   const getIconeCategoria = (categoria: string) => {
     switch (categoria) {
-      case 'Informática': return 'laptop';
-      case 'Mobiliário': return 'wheelchair-pickup';
-      case 'Equipamento Médico': return 'monitor-heart';
+      case 'Informática': return 'computer';
+      case 'Equipamentos de Saúde': return 'medical-services';
+      case 'Mobiliário': return 'meeting-room';
+      case 'Climatização e Apoio': return 'ac-unit';
       default: return 'inventory';
     }
   };
@@ -138,8 +140,8 @@ export default function ListagemScreen() {
           <Text style={styles.headerTitle}>Bens Patrimoniais</Text>
           <Text style={styles.headerSubtitle}>
             {perfil === 'ADMIN' 
-              ? 'Controle de Ativos Hospitalares • Modo Administrador' 
-              : 'Consulta e Rastreabilidade de Bens • Somente Leitura'}
+              ? 'Secretaria Municipal da Saúde de Diadema • Modo Administrador' 
+              : 'Secretaria Municipal da Saúde de Diadema • Modo Consulta'}
           </Text>
         </View>
       </View>
@@ -208,8 +210,19 @@ export default function ListagemScreen() {
                   </View>
 
                   <View style={styles.responsavelRow}>
-                    <Feather name="user" size={13} color="#94a3b8" />
-                    <Text style={[styles.responsavelText, { color: '#94a3b8', fontStyle: 'italic' }]}>
+                    <Feather
+                      name={item.responsavel === 'Não atribuído' ? 'user-x' : 'user-check'}
+                      size={13}
+                      color={item.responsavel === 'Não atribuído' ? '#94a3b8' : '#166534'}
+                    />
+                    <Text
+                      style={[
+                        styles.responsavelText,
+                        item.responsavel === 'Não atribuído'
+                          ? { color: '#94a3b8', fontStyle: 'italic' }
+                          : { color: '#166534', fontWeight: '700' },
+                      ]}
+                    >
                       {item.responsavel}
                     </Text>
                   </View>
@@ -296,12 +309,12 @@ export default function ListagemScreen() {
                 
                 <View style={styles.permissaoItem}>
                   <Feather name="check-circle" size={15} color="#16a34a" />
-                  <Text style={styles.permissaoText}>Visualizar inventário de materiais</Text>
+                  <Text style={styles.permissaoText}>Visualizar inventário de bens da rede municipal</Text>
                 </View>
                 
                 <View style={styles.permissaoItem}>
                   <Feather name="check-circle" size={15} color="#16a34a" />
-                  <Text style={styles.permissaoText}>Consultar termos de custódia e histórico</Text>
+                  <Text style={styles.permissaoText}>Consultar localização em UBSs e termos de custódia</Text>
                 </View>
 
                 <View style={styles.permissaoItem}>

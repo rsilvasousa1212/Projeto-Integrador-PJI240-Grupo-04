@@ -1,80 +1,86 @@
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 
-const DETALHES_PATRIMONIOS: Record<string, any> = {
-  '1': {
-    id: '1',
-    nome: 'Monitor de Sinais Vitais Philips',
-    tombamento: '2023001',
-    numeroSerie: 'PH-998273-X',
-    marca: 'Philips',
-    modelo: 'IntelliVue MX400',
-    categoria: 'Equipamento Médico',
-    status: 'Ativo',
-    unidade: 'Hospital Central',
-    setor: 'UTI Adulto',
-    sala: 'Leito 04',
-    responsavel: 'Não atribuído',
-    dataAquisicao: '15/03/2023',
-    valorAquisicao: 'R$ 14.500,00',
-    observacao: 'Equipamento calibrado anualmente. Próxima calibração em Mar/2027.',
-  },
-  '2': {
-    id: '2',
-    nome: 'Cadeira de Rodas Dobrável',
-    tombamento: '2023002',
-    numeroSerie: 'CR-00293',
-    marca: 'Ortobras',
-    modelo: 'Standard',
-    categoria: 'Mobiliário',
-    status: 'Em Manutenção',
-    unidade: 'Hospital Central',
-    setor: 'Pronto Socorro',
-    sala: 'Corredor Térreo',
-    responsavel: 'Não atribuído',
-    dataAquisicao: '10/01/2022',
-    valorAquisicao: 'R$ 850,00',
-    observacao: 'Enviada para reparo da roda esquerda.',
-  }
-};
+import { SeletorResponsavelModal } from '../../components/SeletorResponsavelModal';
+import {
+  atribuirResponsavel,
+  BemPatrimonial,
+  obterPatrimonioPorId
+} from '../../services/patrimonioService';
+import { ServidorPublico } from '../../services/servidoresService';
 
 export default function DetalhesScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
 
-  const item = DETALHES_PATRIMONIOS[id as string] || {
-    id,
-    nome: 'Equipamento Hospitalar',
-    tombamento: `202300${id}`,
-    numeroSerie: 'N/A',
-    marca: 'N/A',
-    modelo: 'N/A',
-    categoria: 'Geral',
-    status: 'Ativo',
-    unidade: 'Hospital Central',
-    setor: 'Não definido',
-    sala: 'Não definida',
-    responsavel: 'Não atribuído',
-    dataAquisicao: 'N/A',
-    valorAquisicao: 'R$ 0,00',
-    observacao: 'Sem observações adicionais.',
-  };
+  const [item, setItem] = useState<BemPatrimonial>(() => {
+    return (
+      obterPatrimonioPorId(id as string) || {
+        id: String(id),
+        nome: 'Material Permanente',
+        tombamento: `20230${id}`,
+        numeroSerie: 'N/A',
+        marca: 'N/A',
+        modelo: 'N/A',
+        categoria: 'Geral',
+        status: 'Ativo',
+        unidade: 'Secretaria Municipal da Saúde de Diadema',
+        setor: 'Não definido',
+        sala: 'Não definida',
+        responsavel: 'Não atribuído',
+        responsavelDetalhes: null,
+        dataAquisicao: 'N/A',
+        valorAquisicao: 'R$ 0,00',
+        observacao: 'Sem observações adicionais.',
+      }
+    );
+  });
+
+  const [modalAtribuicaoVisivel, setModalAtribuicaoVisivel] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Ativo': return { bg: '#dcfce7', text: '#166534' };
-      case 'Em Manutenção': return { bg: '#fef08a', text: '#854d0e' };
-      case 'Baixado': return { bg: '#fee2e2', text: '#991b1b' };
-      default: return { bg: '#e2e8f0', text: '#475569' };
+      case 'Ativo':
+        return { bg: '#dcfce7', text: '#166534' };
+      case 'Em Manutenção':
+        return { bg: '#fef08a', text: '#854d0e' };
+      case 'Baixado':
+        return { bg: '#fee2e2', text: '#991b1b' };
+      default:
+        return { bg: '#e2e8f0', text: '#475569' };
     }
   };
 
   const getIconeCategoria = (categoria: string) => {
-    if (categoria === 'Equipamento Médico') return 'monitor-heart';
-    if (categoria === 'Mobiliário') return 'wheelchair-pickup';
-    if (categoria === 'Informática') return 'laptop';
+    if (categoria === 'Informática') return 'computer';
+    if (categoria === 'Equipamentos de Saúde') return 'medical-services';
+    if (categoria === 'Mobiliário') return 'meeting-room';
+    if (categoria === 'Climatização e Apoio') return 'ac-unit';
     return 'inventory';
+  };
+
+  const handleSelecionarResponsavel = (servidor: ServidorPublico | null) => {
+    const atualizado = atribuirResponsavel(item.id, servidor);
+    if (atualizado) {
+      setItem(atualizado);
+      if (servidor) {
+        Alert.alert(
+          'Custódia Atualizada',
+          `O bem patrimonial foi atribuído para ${servidor.nome} (${servidor.cargo}).`
+        );
+      } else {
+        Alert.alert('Atribuição Removida', 'O bem agora consta como Não Atribuído.');
+      }
+    }
   };
 
   const statusStyle = getStatusColor(item.status);
@@ -99,18 +105,61 @@ export default function DetalhesScreen() {
               <Text style={[styles.statusText, { color: statusStyle.text }]}>{item.status}</Text>
             </View>
           </View>
-          
+
           <Text style={styles.itemName}>{item.nome}</Text>
-          <Text style={styles.tombamento}>Nº de Tombamento: <Text style={{ color: '#0f172a' }}>{item.tombamento}</Text></Text>
+          <Text style={styles.tombamento}>
+            Nº de Tombamento: <Text style={{ color: '#0f172a' }}>{item.tombamento}</Text>
+          </Text>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Responsabilidade</Text>
-          <View style={styles.infoRow}>
-            <Feather name="user" size={20} color="#64748b" style={styles.infoIcon} />
-            <View>
-              <Text style={styles.infoLabel}>Responsável Atual</Text>
-              <Text style={styles.infoValue}>{item.responsavel}</Text>
+          <View style={styles.sectionHeaderRow}>
+            <Text style={styles.sectionTitle}>Responsabilidade e Custódia</Text>
+            <TouchableOpacity
+              style={styles.btnEditarAtribuicao}
+              onPress={() => setModalAtribuicaoVisivel(true)}
+              activeOpacity={0.7}
+            >
+              <Feather name="user-check" size={14} color="#1e3a8a" style={{ marginRight: 6 }} />
+              <Text style={styles.btnEditarAtribuicaoText}>
+                {item.responsavel === 'Não atribuído' ? 'Atribuir Responsável' : 'Alterar'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.responsavelCard}>
+            <View style={styles.responsavelCardHeader}>
+              <View
+                style={[
+                  styles.avatarCircleSmall,
+                  item.responsavel === 'Não atribuído' && { backgroundColor: '#fee2e2' },
+                ]}
+              >
+                <Feather
+                  name={item.responsavel === 'Não atribuído' ? 'user-x' : 'user'}
+                  size={18}
+                  color={item.responsavel === 'Não atribuído' ? '#dc2626' : '#ffffff'}
+                />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.responsavelNomeText}>{item.responsavel}</Text>
+                {item.responsavelDetalhes ? (
+                  <>
+                    <Text style={styles.responsavelSubText}>
+                      {item.responsavelDetalhes.cargo} • {item.responsavelDetalhes.setor}
+                    </Text>
+                    <Text style={styles.responsavelMetaText}>
+                      Matrícula: {item.responsavelDetalhes.matricula} • {item.responsavelDetalhes.email}
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={styles.responsavelAlertaText}>
+                    {item.responsavel === 'Não atribuído'
+                      ? 'Nenhum servidor vinculado a este material permanente. Clique em "Atribuir Responsável" para pesquisar.'
+                      : 'Servidor público registrado como detentor da custódia deste bem.'}
+                  </Text>
+                )}
+              </View>
             </View>
           </View>
         </View>
@@ -122,7 +171,9 @@ export default function DetalhesScreen() {
             <View style={{ flex: 1 }}>
               <Text style={styles.infoLabel}>Unidade e Setor</Text>
               <Text style={styles.infoValue}>{item.unidade}</Text>
-              <Text style={styles.infoSubValue}>{item.setor} • {item.sala}</Text>
+              <Text style={styles.infoSubValue}>
+                {item.setor} • {item.sala}
+              </Text>
             </View>
           </View>
         </View>
@@ -160,33 +211,41 @@ export default function DetalhesScreen() {
         </View>
 
         <View style={styles.actionContainer}>
-          <TouchableOpacity style={styles.transferButton}>
+          <TouchableOpacity
+            style={styles.transferButton}
+            onPress={() => router.push('/movimentacoes')}
+          >
             <Feather name="repeat" size={18} color="#fff" />
             <Text style={styles.transferButtonText}>Solicitar Transferência</Text>
           </TouchableOpacity>
         </View>
-
       </ScrollView>
+      <SeletorResponsavelModal
+        visible={modalAtribuicaoVisivel}
+        onClose={() => setModalAtribuicaoVisivel(false)}
+        responsavelAtualNome={item.responsavel}
+        onSelect={handleSelecionarResponsavel}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
-  header: { 
-    backgroundColor: '#1e3a8a', 
-    paddingTop: 60, 
-    paddingBottom: 20, 
-    paddingHorizontal: 20, 
-    flexDirection: 'row', 
-    justifyContent: 'space-between', 
+  header: {
+    backgroundColor: '#1e3a8a',
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
   },
   backButton: { width: 40, height: 40, justifyContent: 'center' },
   headerTitle: { color: '#fff', fontSize: 20, fontWeight: '700' },
-  
+
   scrollContent: { padding: 20, paddingBottom: 60 },
-  
+
   topCard: {
     backgroundColor: '#ffffff',
     borderRadius: 16,
@@ -200,11 +259,16 @@ const styles = StyleSheet.create({
   },
   topCardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 },
   iconWrapper: {
-    width: 60, height: 60, backgroundColor: '#eff6ff', borderRadius: 30, justifyContent: 'center', alignItems: 'center'
+    width: 60,
+    height: 60,
+    backgroundColor: '#eff6ff',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   statusBadge: { paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
   statusText: { fontSize: 13, fontWeight: '700' },
-  
+
   itemName: { fontSize: 22, fontWeight: '800', color: '#0f172a', marginBottom: 8 },
   tombamento: { fontSize: 15, color: '#64748b', fontWeight: '600' },
 
@@ -214,8 +278,73 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 20,
   },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#334155', marginBottom: 15 },
-  
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#334155' },
+  btnEditarAtribuicao: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  btnEditarAtribuicaoText: {
+    color: '#1e3a8a',
+    fontSize: 13,
+    fontWeight: '700',
+  },
+
+  responsavelCard: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  responsavelCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  avatarCircleSmall: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#1e3a8a',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  responsavelNomeText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0f172a',
+  },
+  responsavelSubText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+    marginTop: 2,
+  },
+  responsavelMetaText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
+  responsavelAlertaText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontStyle: 'italic',
+    marginTop: 2,
+    lineHeight: 16,
+  },
+
   infoRow: { flexDirection: 'row', alignItems: 'center' },
   infoIcon: { marginRight: 15, backgroundColor: '#f8fafc', padding: 10, borderRadius: 10, overflow: 'hidden' },
   infoLabel: { fontSize: 13, color: '#94a3b8', fontWeight: '600', marginBottom: 2 },
@@ -234,7 +363,7 @@ const styles = StyleSheet.create({
     width: '50%',
     marginBottom: 20,
   },
-  
+
   observacaoText: { fontSize: 15, color: '#475569', lineHeight: 22 },
 
   actionContainer: { marginTop: 10 },
@@ -252,5 +381,5 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
   },
-  transferButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' }
+  transferButtonText: { color: '#ffffff', fontSize: 16, fontWeight: '700' },
 });

@@ -166,7 +166,7 @@ export default function LoginScreen() {
         </View>
 
         <Text style={styles.title}>Gestão de Patrimônio</Text>
-        <Text style={styles.subtitle}>Acesse o sistema com sua conta corporativa para gerenciar equipamentos</Text>
+        <Text style={styles.subtitle}>Secretaria Municipal da Saúde de Diadema • Controle e Rastreabilidade de Bens Permanentes</Text>
 
         <View style={styles.divider} />
 
