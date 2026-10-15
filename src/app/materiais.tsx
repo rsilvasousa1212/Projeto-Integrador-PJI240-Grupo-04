@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -30,6 +31,9 @@ export default function ListagemScreen() {
   const router = useRouter();
 
   const handleLogout = async () => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.history) {
+      window.history.replaceState(null, '', '/');
+    }
     router.replace('/');
   };
 

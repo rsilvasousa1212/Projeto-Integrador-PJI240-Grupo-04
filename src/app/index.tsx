@@ -39,6 +39,9 @@ export default function LoginScreen() {
         const params = new URLSearchParams(hash.replace(/^[#?]/, ''));
         const token = params.get('id_token');
         if (token) {
+          if (typeof window !== 'undefined' && window.history) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
           setLoading(true);
           setMensagemStatus('Validando acesso...');
           api.post('/auth/google/id-token', { idToken: token })
@@ -68,7 +71,8 @@ export default function LoginScreen() {
           `&response_type=id_token` +
           `&redirect_uri=${encodeURIComponent(redirectUri)}` +
           `&scope=openid%20email%20profile` +
-          `&nonce=default_nonce`;
+          `&nonce=default_nonce` +
+          `&prompt=select_account`;
 
         const response = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
 
@@ -88,6 +92,9 @@ export default function LoginScreen() {
         }
       } else {
         await GoogleSignin.hasPlayServices();
+        try {
+          await GoogleSignin.signOut();
+        } catch {}
         const userInfo = await GoogleSignin.signIn();
         idToken = userInfo.data?.idToken;
       }
