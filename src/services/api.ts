@@ -17,6 +17,9 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      config.baseURL = '/api-proxy';
+    }
     return config;
   },
   (error) => {

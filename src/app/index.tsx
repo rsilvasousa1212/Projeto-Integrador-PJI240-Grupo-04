@@ -110,10 +110,12 @@ export default function LoginScreen() {
       console.warn('Erro na autenticação:', error?.response?.status, error?.message);
       
       let mensagem = 'Falha ao conectar no servidor.';
-      if (error?.response?.status === 503) {
-        mensagem = 'O servidor está temporariamente indisponível (503).';
+      if (typeof error?.response?.data === 'string' && error.response.data.length > 0) {
+        mensagem = error.response.data;
       } else if (error?.response?.data?.message) {
         mensagem = error.response.data.message;
+      } else if (error?.response?.status) {
+        mensagem = `Erro no servidor (${error.response.status})`;
       } else if (error?.message) {
         mensagem = error.message;
       }
