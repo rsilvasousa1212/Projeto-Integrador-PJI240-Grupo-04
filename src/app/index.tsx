@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 
 import { api } from '../services/api';
+import { decodeGoogleToken, saveUser } from '../services/authStorage';
 
 import { GoogleSignin } from '@react-native-google-signin/google-signin';
 
@@ -45,7 +46,15 @@ export default function LoginScreen() {
           setLoading(true);
           setMensagemStatus('Validando acesso...');
           api.post('/auth/google/id-token', { idToken: token })
-            .then(() => {
+            .then((res) => {
+              const googleData = decodeGoogleToken(token);
+              const backendData = res?.data || {};
+              saveUser({
+                name: backendData.name || backendData.user?.name || googleData.name || 'Usuário',
+                email: backendData.email || backendData.user?.email || googleData.email || '',
+                picture: backendData.picture || backendData.user?.picture || googleData.picture,
+                role: (backendData.role === 'USER' || backendData.perfil === 'USER') ? 'USER' : 'ADMIN',
+              });
               router.replace('/materiais');
             })
             .catch((err) => {
@@ -106,8 +115,18 @@ export default function LoginScreen() {
       }
 
       setMensagemStatus('Validando no servidor...');
-      await api.post('/auth/google/id-token', {
+      const res = await api.post('/auth/google/id-token', {
         idToken: idToken
+      });
+
+      const googleData = decodeGoogleToken(idToken);
+      const backendData = res?.data || {};
+
+      saveUser({
+        name: backendData.name || backendData.user?.name || googleData.name || 'Usuário',
+        email: backendData.email || backendData.user?.email || googleData.email || '',
+        picture: backendData.picture || backendData.user?.picture || googleData.picture,
+        role: (backendData.role === 'USER' || backendData.perfil === 'USER') ? 'USER' : 'ADMIN',
       });
 
       setMensagemStatus('Sucesso! Entrando...');
