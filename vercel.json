@@ -2,6 +2,10 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api-proxy/:path*",
+      "destination": "https://epatrimonio-backend-982353293618.us-central1.run.app/api/:path*"
+    },
+    {
       "source": "/detalhes/(.*)",
       "destination": "/detalhes/[id].html"
     }
