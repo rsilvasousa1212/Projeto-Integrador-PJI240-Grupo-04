@@ -2,8 +2,9 @@ import { AntDesign } from '@expo/vector-icons';
 import * as AuthSession from 'expo-auth-session';
 import { useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   Image,
   KeyboardAvoidingView,
@@ -28,6 +29,8 @@ if (Platform.OS !== 'web') {
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [mensagemStatus, setMensagemStatus] = useState<string | null>(null);
 
   useEffect(() => {
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
@@ -36,12 +39,16 @@ export default function LoginScreen() {
         const params = new URLSearchParams(hash.replace(/^[#?]/, ''));
         const token = params.get('id_token');
         if (token) {
+          setLoading(true);
+          setMensagemStatus('Validando acesso...');
           api.post('/auth/google/id-token', { idToken: token })
             .then(() => {
               router.replace('/materiais');
             })
             .catch((err) => {
               console.warn('Erro ao autenticar token da URL:', err);
+              setMensagemStatus('Falha ao autenticar: ' + (err?.response?.data?.message || err?.message));
+              setLoading(false);
             });
         }
       }
@@ -50,6 +57,8 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
+      setLoading(true);
+      setMensagemStatus('Conectando com o Google...');
       let idToken: string | null | undefined = null;
 
       if (Platform.OS === 'web') {
@@ -68,10 +77,13 @@ export default function LoginScreen() {
             response.url.split('#')[1] || response.url.split('?')[1]
           );
           idToken = urlParams.get('id_token');
-        } else if (response.type !== 'cancel') {
-          Alert.alert('Aviso', 'O login não foi concluído.');
+        } else if (response.type !== 'cancel' && response.type !== 'dismiss') {
+          setMensagemStatus('Aviso: Login não concluído (' + response.type + ')');
+          setLoading(false);
           return;
         } else {
+          setMensagemStatus('Janela fechada pelo usuário.');
+          setLoading(false);
           return;
         }
       } else {
@@ -81,14 +93,17 @@ export default function LoginScreen() {
       }
 
       if (!idToken) {
-        Alert.alert('Erro', 'Falha ao recuperar o token do Google.');
+        setMensagemStatus('Não foi possível obter o token do Google.');
+        setLoading(false);
         return;
       }
 
+      setMensagemStatus('Validando no servidor...');
       await api.post('/auth/google/id-token', {
         idToken: idToken
       });
 
+      setMensagemStatus('Sucesso! Entrando...');
       router.replace('/materiais');
 
     } catch (error: any) {
@@ -96,14 +111,15 @@ export default function LoginScreen() {
       
       let mensagem = 'Falha ao conectar no servidor.';
       if (error?.response?.status === 503) {
-        mensagem = 'O servidor está temporariamente indisponível. Tente novamente em instantes.';
+        mensagem = 'O servidor está temporariamente indisponível (503).';
       } else if (error?.response?.data?.message) {
         mensagem = error.response.data.message;
       } else if (error?.message) {
         mensagem = error.message;
       }
 
-      Alert.alert('Erro de Conexão', mensagem);
+      setMensagemStatus(mensagem);
+      setLoading(false);
     }
   };
 
@@ -126,10 +142,27 @@ export default function LoginScreen() {
 
         <View style={styles.divider} />
 
-        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin} activeOpacity={0.8}>
-          <AntDesign name="google" size={22} color="#ffffff" style={styles.googleIcon} />
-          <Text style={styles.googleButtonText}>Entrar com o Google</Text>
+        <TouchableOpacity 
+          style={[styles.googleButton, loading && { opacity: 0.7 }]} 
+          onPress={handleGoogleLogin} 
+          activeOpacity={0.8}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator size="small" color="#ffffff" style={styles.googleIcon} />
+          ) : (
+            <AntDesign name="google" size={22} color="#ffffff" style={styles.googleIcon} />
+          )}
+          <Text style={styles.googleButtonText}>
+            {loading ? 'Aguarde...' : 'Entrar com o Google'}
+          </Text>
         </TouchableOpacity>
+
+        {mensagemStatus && (
+          <Text style={{ marginTop: 15, fontSize: 13, color: '#64748b', textAlign: 'center' }}>
+            {mensagemStatus}
+          </Text>
+        )}
 
         <Text style={styles.footerText}>Versão 1.0.0</Text>
       </View>
