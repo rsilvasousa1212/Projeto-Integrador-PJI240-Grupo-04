@@ -125,6 +125,13 @@ export default function ListagemScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton} 
+              onPress={() => router.push('/relatorios' as any)}
+            >
+              <Feather name="bar-chart-2" size={18} color="#fff" />
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton} 
               onPress={() => router.push('/movimentacoes')}
             >
               <Feather name="repeat" size={18} color="#fff" />
@@ -348,6 +355,17 @@ export default function ListagemScreen() {
                 <Text style={styles.btnAlternarPerfilText}>
                   {perfil === 'ADMIN' ? 'Mudar para Modo Consulta' : 'Mudar para Modo Administrador'}
                 </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.btnModalRelatorios}
+                onPress={() => {
+                  setModalPerfilVisivel(false);
+                  router.push('/relatorios' as any);
+                }}
+              >
+                <Feather name="bar-chart-2" size={16} color="#1e3a8a" style={{ marginRight: 8 }} />
+                <Text style={styles.btnModalRelatoriosText}>Relatório Geral & Auditoria</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -578,6 +596,23 @@ const styles = StyleSheet.create({
   },
   btnAlternarPerfilText: {
     color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  btnModalRelatorios: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    backgroundColor: '#eff6ff',
+    marginBottom: 10,
+  },
+  btnModalRelatoriosText: {
+    color: '#1e3a8a',
     fontSize: 14,
     fontWeight: '700',
   },

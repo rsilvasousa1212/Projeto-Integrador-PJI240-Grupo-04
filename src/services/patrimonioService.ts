@@ -20,6 +20,20 @@ export interface BemPatrimonial {
   observacao: string;
 }
 
+export type TipoAcaoAuditoria = 'CADASTRO' | 'EDICAO' | 'EXCLUSAO' | 'ATRIBUICAO' | 'TRANSFERENCIA';
+
+export interface AcaoAuditoria {
+  id: string;
+  tipo: TipoAcaoAuditoria;
+  titulo: string;
+  descricao: string;
+  patrimonioNome: string;
+  tombamento: string;
+  usuarioNome: string;
+  usuarioEmail: string;
+  dataHora: string;
+}
+
 const DADOS_INICIAIS: BemPatrimonial[] = [
   {
     id: '1',
@@ -142,15 +156,64 @@ const DADOS_INICIAIS: BemPatrimonial[] = [
   },
 ];
 
-const STORAGE_KEY = '@epatrimonio_dados_bens';
+const HISTORICO_INICIAL: AcaoAuditoria[] = [
+  {
+    id: 'aud-1',
+    tipo: 'CADASTRO',
+    titulo: 'Tombamento Inicial de Lote',
+    descricao: 'Cadastro oficial de material permanente adquirido pelo pregão municipal.',
+    patrimonioNome: 'Câmara de Conservação de Vacinas 280L',
+    tombamento: '2023011',
+    usuarioNome: 'Renato da Silva de Sousa',
+    usuarioEmail: 'renato.sousa@saude.diadema.sp.gov.br',
+    dataHora: '15/10/2026 09:30',
+  },
+  {
+    id: 'aud-2',
+    tipo: 'ATRIBUICAO',
+    titulo: 'Definição de Custódia Inicial',
+    descricao: 'Termo de responsabilidade gerado para a servidora responsável de imunização da unidade.',
+    patrimonioNome: 'Câmara de Conservação de Vacinas 280L',
+    tombamento: '2023011',
+    usuarioNome: 'Renato da Silva de Sousa',
+    usuarioEmail: 'renato.sousa@saude.diadema.sp.gov.br',
+    dataHora: '15/10/2026 10:15',
+  },
+  {
+    id: 'aud-3',
+    tipo: 'TRANSFERENCIA',
+    titulo: 'Solicitação de Transferência',
+    descricao: 'Remessa enviada do Almoxarifado Central com destino à Farmácia Central Municipal.',
+    patrimonioNome: 'Impressora Térmica de Etiquetas Zebra',
+    tombamento: '2023015',
+    usuarioNome: 'Renato da Silva de Sousa',
+    usuarioEmail: 'renato.sousa@saude.diadema.sp.gov.br',
+    dataHora: '15/10/2026 14:00',
+  },
+  {
+    id: 'aud-4',
+    tipo: 'EDICAO',
+    titulo: 'Atualização de Estado de Conservação',
+    descricao: 'Status alterado para "Em Manutenção" para envio à assistência técnica autorizada.',
+    patrimonioNome: 'Autoclave Digital de Bancada 21L',
+    tombamento: '2023014',
+    usuarioNome: 'Renato da Silva de Sousa',
+    usuarioEmail: 'renato.sousa@saude.diadema.sp.gov.br',
+    dataHora: '15/10/2026 15:45',
+  },
+];
+
+const STORAGE_KEY_BENS = '@epatrimonio_dados_bens';
+const STORAGE_KEY_AUDITORIA = '@epatrimonio_historico_auditoria';
 
 let memoriaBens: BemPatrimonial[] | null = null;
+let memoriaAuditoria: AcaoAuditoria[] | null = null;
 
 function carregarBens(): BemPatrimonial[] {
   if (memoriaBens) return memoriaBens;
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
     try {
-      const salvo = window.localStorage.getItem(STORAGE_KEY);
+      const salvo = window.localStorage.getItem(STORAGE_KEY_BENS);
       if (salvo) {
         memoriaBens = JSON.parse(salvo);
         if (memoriaBens && memoriaBens.length > 0) return memoriaBens;
@@ -165,9 +228,62 @@ function salvarBens(bens: BemPatrimonial[]) {
   memoriaBens = bens;
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
     try {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(bens));
+      window.localStorage.setItem(STORAGE_KEY_BENS, JSON.stringify(bens));
     } catch {}
   }
+}
+
+function carregarAuditoria(): AcaoAuditoria[] {
+  if (memoriaAuditoria) return memoriaAuditoria;
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+    try {
+      const salvo = window.localStorage.getItem(STORAGE_KEY_AUDITORIA);
+      if (salvo) {
+        memoriaAuditoria = JSON.parse(salvo);
+        if (memoriaAuditoria && memoriaAuditoria.length > 0) return memoriaAuditoria;
+      }
+    } catch {}
+  }
+  memoriaAuditoria = [...HISTORICO_INICIAL];
+  return memoriaAuditoria;
+}
+
+function salvarAuditoria(lista: AcaoAuditoria[]) {
+  memoriaAuditoria = lista;
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY_AUDITORIA, JSON.stringify(lista));
+    } catch {}
+  }
+}
+
+function formatarDataHoraAtual(): string {
+  const agora = new Date();
+  const dia = String(agora.getDate()).padStart(2, '0');
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  const ano = agora.getFullYear();
+  const horas = String(agora.getHours()).padStart(2, '0');
+  const minutos = String(agora.getMinutes()).padStart(2, '0');
+  return `${dia}/${mes}/${ano} ${horas}:${minutos}`;
+}
+
+export function registrarAcaoAuditoria(
+  acao: Omit<AcaoAuditoria, 'id' | 'dataHora'>
+): AcaoAuditoria {
+  const lista = carregarAuditoria();
+  const novoRegistro: AcaoAuditoria = {
+    ...acao,
+    id: `aud-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    dataHora: formatarDataHoraAtual(),
+  };
+
+  const atualizada = [novoRegistro, ...lista];
+  salvarAuditoria(atualizada);
+  return novoRegistro;
+}
+
+export function obterHistoricoAuditoria(): AcaoAuditoria[] {
+  return carregarAuditoria();
 }
 
 export function obterTodosPatrimonios(): BemPatrimonial[] {
@@ -179,23 +295,44 @@ export function obterPatrimonioPorId(id: string): BemPatrimonial | null {
   return bens.find((b) => b.id === id) || null;
 }
 
-export function atribuirResponsavel(id: string, servidor: ServidorPublico | null): BemPatrimonial | null {
+export function atribuirResponsavel(
+  id: string,
+  servidor: ServidorPublico | null,
+  autor?: { nome: string; email: string }
+): BemPatrimonial | null {
   const bens = carregarBens();
   const index = bens.findIndex((b) => b.id === id);
   if (index === -1) return null;
 
+  const anterior = bens[index];
   const atualizado: BemPatrimonial = {
-    ...bens[index],
+    ...anterior,
     responsavel: servidor ? servidor.nome : 'Não atribuído',
     responsavelDetalhes: servidor || null,
   };
 
   bens[index] = atualizado;
   salvarBens([...bens]);
+
+  registrarAcaoAuditoria({
+    tipo: 'ATRIBUICAO',
+    titulo: servidor ? 'Atribuição de Custódia' : 'Remoção de Custódia',
+    descricao: servidor
+      ? `Bem atribuído ao servidor ${servidor.nome} (${servidor.cargo} - Matrícula: ${servidor.matricula}).`
+      : `Custódia do bem foi alterada para "Não atribuído".`,
+    patrimonioNome: atualizado.nome,
+    tombamento: atualizado.tombamento,
+    usuarioNome: autor?.nome || 'Servidor Municipal',
+    usuarioEmail: autor?.email || 'gestao.patrimonio@saude.diadema.sp.gov.br',
+  });
+
   return atualizado;
 }
 
-export function adicionarNovoPatrimonio(item: Partial<BemPatrimonial>): BemPatrimonial {
+export function adicionarNovoPatrimonio(
+  item: Partial<BemPatrimonial>,
+  autor?: { nome: string; email: string }
+): BemPatrimonial {
   const bens = carregarBens();
   const novo: BemPatrimonial = {
     id: String(Date.now()),
@@ -210,7 +347,7 @@ export function adicionarNovoPatrimonio(item: Partial<BemPatrimonial>): BemPatri
     marca: item.marca || 'N/A',
     modelo: item.modelo || 'N/A',
     unidade: item.unidade || 'Secretaria Municipal da Saúde de Diadema',
-    sala: item.sala || 'Almoxarifado',
+    sala: item.sala || 'Geral',
     dataAquisicao: item.dataAquisicao || new Date().toLocaleDateString('pt-BR'),
     valorAquisicao: item.valorAquisicao || 'R$ 0,00',
     observacao: item.observacao || 'Cadastrado no sistema de gestão patrimonial.',
@@ -218,5 +355,101 @@ export function adicionarNovoPatrimonio(item: Partial<BemPatrimonial>): BemPatri
 
   const listaAtualizada = [novo, ...bens];
   salvarBens(listaAtualizada);
+
+  registrarAcaoAuditoria({
+    tipo: 'CADASTRO',
+    titulo: 'Cadastro de Patrimônio',
+    descricao: `Inclusão do bem "${novo.nome}" com tombamento nº ${novo.tombamento} no setor ${novo.setor}.`,
+    patrimonioNome: novo.nome,
+    tombamento: novo.tombamento,
+    usuarioNome: autor?.nome || 'Servidor Municipal',
+    usuarioEmail: autor?.email || 'gestao.patrimonio@saude.diadema.sp.gov.br',
+  });
+
   return novo;
+}
+
+export function atualizarPatrimonio(
+  id: string,
+  dados: Partial<BemPatrimonial>,
+  autor?: { nome: string; email: string }
+): BemPatrimonial | null {
+  const bens = carregarBens();
+  const index = bens.findIndex((b) => b.id === id);
+  if (index === -1) return null;
+
+  const anterior = bens[index];
+  const atualizado: BemPatrimonial = {
+    ...anterior,
+    ...dados,
+    id: anterior.id,
+  };
+
+  bens[index] = atualizado;
+  salvarBens([...bens]);
+
+  registrarAcaoAuditoria({
+    tipo: 'EDICAO',
+    titulo: 'Alteração de Dados Patrimoniais',
+    descricao: `Dados do bem "${atualizado.nome}" (Tombamento: ${atualizado.tombamento}) foram atualizados. Status: ${atualizado.status}, Setor: ${atualizado.setor}.`,
+    patrimonioNome: atualizado.nome,
+    tombamento: atualizado.tombamento,
+    usuarioNome: autor?.nome || 'Servidor Municipal',
+    usuarioEmail: autor?.email || 'gestao.patrimonio@saude.diadema.sp.gov.br',
+  });
+
+  return atualizado;
+}
+
+export function excluirPatrimonio(
+  id: string,
+  autor?: { nome: string; email: string }
+): boolean {
+  const bens = carregarBens();
+  const item = bens.find((b) => b.id === id);
+  if (!item) return false;
+
+  const novaLista = bens.filter((b) => b.id !== id);
+  salvarBens(novaLista);
+
+  registrarAcaoAuditoria({
+    tipo: 'EXCLUSAO',
+    titulo: 'Exclusão de Patrimônio',
+    descricao: `Patrimônio "${item.nome}" (Tombamento: ${item.tombamento}) foi removido do inventário da SMS Diadema.`,
+    patrimonioNome: item.nome,
+    tombamento: item.tombamento,
+    usuarioNome: autor?.nome || 'Servidor Municipal',
+    usuarioEmail: autor?.email || 'gestao.patrimonio@saude.diadema.sp.gov.br',
+  });
+
+  return true;
+}
+
+export function obterMetricasPatrimonio() {
+  const bens = carregarBens();
+  const auditoria = carregarAuditoria();
+
+  let valorTotalCalculado = 0;
+  let ativos = 0;
+  let manutencao = 0;
+  let baixados = 0;
+
+  bens.forEach((b) => {
+    if (b.status === 'Ativo') ativos++;
+    else if (b.status === 'Em Manutenção') manutencao++;
+    else if (b.status === 'Baixado') baixados++;
+
+    const limpo = b.valorAquisicao.replace(/[^\d,]/g, '').replace(',', '.');
+    const valorNum = parseFloat(limpo) || 0;
+    valorTotalCalculado += valorNum;
+  });
+
+  return {
+    totalBens: bens.length,
+    valorTotal: valorTotalCalculado,
+    ativos,
+    manutencao,
+    baixados,
+    totalAcoes: auditoria.length,
+  };
 }

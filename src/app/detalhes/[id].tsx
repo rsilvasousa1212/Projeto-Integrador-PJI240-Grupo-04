@@ -10,10 +10,14 @@ import {
   View
 } from 'react-native';
 
+import { ModalEditarPatrimonio } from '../../components/ModalEditarPatrimonio';
 import { SeletorResponsavelModal } from '../../components/SeletorResponsavelModal';
+import { getUser } from '../../services/authStorage';
 import {
   atribuirResponsavel,
+  atualizarPatrimonio,
   BemPatrimonial,
+  excluirPatrimonio,
   obterPatrimonioPorId
 } from '../../services/patrimonioService';
 import { ServidorPublico } from '../../services/servidoresService';
@@ -21,6 +25,8 @@ import { ServidorPublico } from '../../services/servidoresService';
 export default function DetalhesScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const usuario = getUser();
+  const isAdmin = usuario.role === 'ADMIN';
 
   const [item, setItem] = useState<BemPatrimonial>(() => {
     return (
@@ -46,6 +52,7 @@ export default function DetalhesScreen() {
   });
 
   const [modalAtribuicaoVisivel, setModalAtribuicaoVisivel] = useState(false);
+  const [modalEdicaoVisivel, setModalEdicaoVisivel] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -69,7 +76,10 @@ export default function DetalhesScreen() {
   };
 
   const handleSelecionarResponsavel = (servidor: ServidorPublico | null) => {
-    const atualizado = atribuirResponsavel(item.id, servidor);
+    const atualizado = atribuirResponsavel(item.id, servidor, {
+      nome: usuario.name,
+      email: usuario.email,
+    });
     if (atualizado) {
       setItem(atualizado);
       if (servidor) {
@@ -81,6 +91,41 @@ export default function DetalhesScreen() {
         Alert.alert('Atribuição Removida', 'O bem agora consta como Não Atribuído.');
       }
     }
+  };
+
+  const handleSalvarEdicao = (dadosAtualizados: Partial<BemPatrimonial>) => {
+    const atualizado = atualizarPatrimonio(item.id, dadosAtualizados, {
+      nome: usuario.name,
+      email: usuario.email,
+    });
+    if (atualizado) {
+      setItem(atualizado);
+      Alert.alert('Sucesso', 'Informações patrimoniais atualizadas com sucesso.');
+    }
+  };
+
+  const handleExcluir = () => {
+    Alert.alert(
+      'Excluir Bem Patrimonial',
+      `Tem certeza de que deseja excluir permanentemente o bem "${item.nome}" (Tombamento: ${item.tombamento})? Esta ação é irreversível e ficará registrada no relatório de auditoria.`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Sim, Excluir',
+          style: 'destructive',
+          onPress: () => {
+            const sucesso = excluirPatrimonio(item.id, {
+              nome: usuario.name,
+              email: usuario.email,
+            });
+            if (sucesso) {
+              Alert.alert('Patrimônio Excluído', 'O material foi removido do inventário.');
+              router.replace('/materiais');
+            }
+          },
+        },
+      ]
+    );
   };
 
   const statusStyle = getStatusColor(item.status);
@@ -110,21 +155,50 @@ export default function DetalhesScreen() {
           <Text style={styles.tombamento}>
             Nº de Tombamento: <Text style={{ color: '#0f172a' }}>{item.tombamento}</Text>
           </Text>
+
+          {isAdmin ? (
+            <View style={styles.adminActionsBar}>
+              <TouchableOpacity
+                style={styles.btnEditarPatrimonio}
+                onPress={() => setModalEdicaoVisivel(true)}
+                activeOpacity={0.7}
+              >
+                <Feather name="edit-3" size={15} color="#1e3a8a" style={{ marginRight: 6 }} />
+                <Text style={styles.btnEditarPatrimonioText}>Editar Dados</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.btnExcluirPatrimonio}
+                onPress={handleExcluir}
+                activeOpacity={0.7}
+              >
+                <Feather name="trash-2" size={15} color="#dc2626" style={{ marginRight: 6 }} />
+                <Text style={styles.btnExcluirPatrimonioText}>Excluir Bem</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.consultaBar}>
+              <Feather name="eye" size={14} color="#854d0e" style={{ marginRight: 6 }} />
+              <Text style={styles.consultaBarText}>Modo Consulta • Somente administradores podem editar ou excluir</Text>
+            </View>
+          )}
         </View>
 
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>Responsabilidade e Custódia</Text>
-            <TouchableOpacity
-              style={styles.btnEditarAtribuicao}
-              onPress={() => setModalAtribuicaoVisivel(true)}
-              activeOpacity={0.7}
-            >
-              <Feather name="user-check" size={14} color="#1e3a8a" style={{ marginRight: 6 }} />
-              <Text style={styles.btnEditarAtribuicaoText}>
-                {item.responsavel === 'Não atribuído' ? 'Atribuir Responsável' : 'Alterar'}
-              </Text>
-            </TouchableOpacity>
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.btnEditarAtribuicao}
+                onPress={() => setModalAtribuicaoVisivel(true)}
+                activeOpacity={0.7}
+              >
+                <Feather name="user-check" size={14} color="#1e3a8a" style={{ marginRight: 6 }} />
+                <Text style={styles.btnEditarAtribuicaoText}>
+                  {item.responsavel === 'Não atribuído' ? 'Atribuir Responsável' : 'Alterar'}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
 
           <View style={styles.responsavelCard}>
@@ -155,7 +229,7 @@ export default function DetalhesScreen() {
                 ) : (
                   <Text style={styles.responsavelAlertaText}>
                     {item.responsavel === 'Não atribuído'
-                      ? 'Nenhum servidor vinculado a este material permanente. Clique em "Atribuir Responsável" para pesquisar.'
+                      ? 'Nenhum servidor vinculado a este material permanente.'
                       : 'Servidor público registrado como detentor da custódia deste bem.'}
                   </Text>
                 )}
@@ -220,11 +294,19 @@ export default function DetalhesScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
       <SeletorResponsavelModal
         visible={modalAtribuicaoVisivel}
         onClose={() => setModalAtribuicaoVisivel(false)}
         responsavelAtualNome={item.responsavel}
         onSelect={handleSelecionarResponsavel}
+      />
+
+      <ModalEditarPatrimonio
+        visible={modalEdicaoVisivel}
+        item={item}
+        onClose={() => setModalEdicaoVisivel(false)}
+        onSalvar={handleSalvarEdicao}
       />
     </View>
   );
@@ -271,6 +353,64 @@ const styles = StyleSheet.create({
 
   itemName: { fontSize: 22, fontWeight: '800', color: '#0f172a', marginBottom: 8 },
   tombamento: { fontSize: 15, color: '#64748b', fontWeight: '600' },
+
+  adminActionsBar: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 16,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  btnEditarPatrimonio: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eff6ff',
+    borderWidth: 1,
+    borderColor: '#bfdbfe',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  btnEditarPatrimonioText: {
+    color: '#1e3a8a',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  btnExcluirPatrimonio: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  btnExcluirPatrimonioText: {
+    color: '#dc2626',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+
+  consultaBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fefce8',
+    borderWidth: 1,
+    borderColor: '#fef08a',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 14,
+  },
+  consultaBarText: {
+    color: '#854d0e',
+    fontSize: 12,
+    fontWeight: '600',
+    flex: 1,
+  },
 
   section: {
     backgroundColor: '#ffffff',
