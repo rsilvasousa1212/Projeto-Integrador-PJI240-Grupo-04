@@ -122,7 +122,7 @@ export function SeletorResponsavelModal({
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Feather name="user-x" size={32} color="#cbd5e1" />
-                <Text style={styles.emptyText}>Nenhum servidor encontrado com "{busca}".</Text>
+                <Text style={styles.emptyText}>{`Nenhum servidor encontrado com "${busca}".`}</Text>
               </View>
             }
           />

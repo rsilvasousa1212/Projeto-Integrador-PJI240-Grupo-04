@@ -2,7 +2,6 @@ import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
   FlatList,
   Image,
   Modal,
@@ -15,29 +14,29 @@ import {
   View
 } from 'react-native';
 
+import { AppLayout } from '../components/AppLayout';
 import { clearUser, getUser, updateUserRole, UserProfile } from '../services/authStorage';
 import { BemPatrimonial, obterTodosPatrimonios } from '../services/patrimonioService';
 
 const CATEGORIAS = ['Todos', 'Informática', 'Equipamentos de Saúde', 'Mobiliário', 'Climatização e Apoio'];
 
 export default function ListagemScreen() {
-  const [usuario, setUsuario] = useState<UserProfile>(getUser());
-  const [perfil, setPerfil] = useState<'ADMIN' | 'USER'>(usuario.role || 'ADMIN');
+  const [usuario, setUsuario] = useState<UserProfile>(() => getUser());
+  const [perfil, setPerfil] = useState<'ADMIN' | 'USER'>(() => getUser().role || 'ADMIN');
   const [modalPerfilVisivel, setModalPerfilVisivel] = useState(false);
   const [bens, setBens] = useState<BemPatrimonial[]>(() => obterTodosPatrimonios());
-  const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [categoriaAtiva, setCategoriaAtiva] = useState('Todos');
   const router = useRouter();
 
   useEffect(() => {
-    const u = getUser();
-    setUsuario(u);
-    setPerfil(u.role || 'ADMIN');
-    setBens(obterTodosPatrimonios());
-
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      const recarregar = () => setBens(obterTodosPatrimonios());
+      const recarregar = () => {
+        const u = getUser();
+        setUsuario(u);
+        setPerfil(u.role || 'ADMIN');
+        setBens(obterTodosPatrimonios());
+      };
       window.addEventListener('focus', recarregar);
       return () => window.removeEventListener('focus', recarregar);
     }
@@ -87,71 +86,30 @@ export default function ListagemScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.userBar}>
-          <TouchableOpacity 
-            style={styles.userProfileButton} 
-            activeOpacity={0.7}
-            onPress={() => setModalPerfilVisivel(true)}
-          >
-            {usuario.picture ? (
-              <Image source={{ uri: usuario.picture }} style={styles.avatarImage} />
-            ) : (
-              <View style={styles.avatarFallback}>
-                <Text style={styles.avatarInitial}>
-                  {usuario.name ? usuario.name.charAt(0).toUpperCase() : 'U'}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.userInfo}>
-              <Text style={styles.userName} numberOfLines={1}>{usuario.name}</Text>
-              <Text style={styles.userEmail} numberOfLines={1}>{usuario.email}</Text>
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.headerButtons}>
+    <AppLayout
+      rotaAtiva="materiais"
+      titulo="Consulta de Materiais"
+      subtitulo="Inventário e Rastreabilidade • SMS Diadema"
+    >
+      <View style={styles.container}>
+        <View style={styles.inventoryToolbar}>
+          <View style={styles.inventoryStatsRow}>
+            <Text style={styles.inventoryCountText}>
+              <Text style={{ fontWeight: '800', color: '#0f172a' }}>{bensFiltrados.length}</Text>{' '}
+              {bensFiltrados.length === 1 ? 'patrimônio cadastrado' : 'patrimônios cadastrados'}
+            </Text>
             <TouchableOpacity 
               style={[styles.badgePerfil, { backgroundColor: perfil === 'ADMIN' ? '#22c55e' : '#f59e0b' }]} 
               onPress={togglePerfil}
               activeOpacity={0.8}
             >
-              <Feather name="shield" size={13} color="#fff" style={{ marginRight: 4 }} />
+              <Feather name="shield" size={12} color="#fff" style={{ marginRight: 4 }} />
               <Text style={styles.badgePerfilText}>
-                {perfil === 'ADMIN' ? 'Admin' : 'Consulta'}
+                {perfil === 'ADMIN' ? 'Modo Admin' : 'Modo Consulta'}
               </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton} 
-              onPress={() => router.push('/relatorios' as any)}
-            >
-              <Feather name="bar-chart-2" size={18} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton} 
-              onPress={() => router.push('/movimentacoes')}
-            >
-              <Feather name="repeat" size={18} color="#fff" />
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-              <AntDesign name="logout" size={18} color="#fff" />
             </TouchableOpacity>
           </View>
         </View>
-
-        <View style={styles.titleSection}>
-          <Text style={styles.headerTitle}>Bens Patrimoniais</Text>
-          <Text style={styles.headerSubtitle}>
-            {perfil === 'ADMIN' 
-              ? 'Secretaria Municipal da Saúde de Diadema • Modo Administrador' 
-              : 'Secretaria Municipal da Saúde de Diadema • Modo Consulta'}
-          </Text>
-        </View>
-      </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputWrapper}>
@@ -187,16 +145,10 @@ export default function ListagemScreen() {
         </ScrollView>
       </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1e3a8a" />
-          <Text style={styles.loadingText}>Carregando inventário...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={bensFiltrados}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
+      <FlatList
+        data={bensFiltrados}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
           renderItem={({ item }) => {
             const statusStyle = getStatusColor(item.status);
             return (
@@ -255,7 +207,6 @@ export default function ListagemScreen() {
             </View>
           }
         />
-      )}
 
       {perfil === 'ADMIN' && (
         <TouchableOpacity 
@@ -383,11 +334,28 @@ export default function ListagemScreen() {
         </TouchableOpacity>
       </Modal>
     </View>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f8fafc' },
+  inventoryToolbar: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  inventoryStatsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  inventoryCountText: {
+    fontSize: 14,
+    color: '#64748b',
+  },
   header: { 
     backgroundColor: '#1e3a8a', 
     paddingTop: 50, 

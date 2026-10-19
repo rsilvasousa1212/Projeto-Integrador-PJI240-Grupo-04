@@ -1,5 +1,4 @@
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
   Alert,
@@ -13,8 +12,8 @@ import {
   View
 } from 'react-native';
 
+import { AppLayout } from '../components/AppLayout';
 import {
-  AcaoAuditoria,
   obterHistoricoAuditoria,
   obterMetricasPatrimonio,
   TipoAcaoAuditoria
@@ -30,7 +29,6 @@ const FILTROS_TIPO = [
 ];
 
 export default function RelatoriosScreen() {
-  const router = useRouter();
   const [busca, setBusca] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('TODOS');
 
@@ -84,22 +82,24 @@ export default function RelatoriosScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <AntDesign name="arrow-left" size={24} color="#fff" />
-          </TouchableOpacity>
-          <View style={{ flex: 1, marginLeft: 10 }}>
-            <Text style={styles.headerTitle}>Relatórios & Auditoria</Text>
-            <Text style={styles.headerSubtitle}>Secretaria Municipal da Saúde de Diadema</Text>
+    <AppLayout
+      rotaAtiva="relatorios"
+      titulo="Relatórios & Auditoria"
+      subtitulo="Histórico de Ações e Prestação de Contas • SMS Diadema"
+    >
+      <View style={styles.container}>
+        <View style={styles.toolbar}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.toolbarTitle}>Trilha de Auditoria & Indicadores</Text>
+            <Text style={styles.toolbarSub}>
+              {historicoFiltrado.length} {historicoFiltrado.length === 1 ? 'registro encontrado' : 'registros encontrados'}
+            </Text>
           </View>
           <TouchableOpacity style={styles.btnPrint} onPress={handleExportar} activeOpacity={0.8}>
-            <Feather name="printer" size={18} color="#fff" style={{ marginRight: 6 }} />
-            <Text style={styles.btnPrintText}>Exportar</Text>
+            <Feather name="printer" size={16} color="#fff" style={{ marginRight: 6 }} />
+            <Text style={styles.btnPrintText}>Exportar / Imprimir</Text>
           </TouchableOpacity>
         </View>
-      </View>
 
       <FlatList
         data={historicoFiltrado}
@@ -107,7 +107,6 @@ export default function RelatoriosScreen() {
         contentContainerStyle={styles.listContent}
         ListHeaderComponent={
           <>
-            {/* Cards de Indicadores / Métricas do Inventário */}
             <View style={styles.kpiContainer}>
               <View style={[styles.kpiCard, { borderLeftColor: '#1e3a8a' }]}>
                 <View style={styles.kpiHeader}>
@@ -152,7 +151,6 @@ export default function RelatoriosScreen() {
               </View>
             </View>
 
-            {/* Barra de Pesquisa e Filtros de Auditoria */}
             <View style={styles.sectionTitleRow}>
               <Text style={styles.sectionTitle}>Histórico de Ocorrências e Ações</Text>
               <Text style={styles.sectionBadge}>{historicoFiltrado.length} registros</Text>
@@ -248,11 +246,32 @@ export default function RelatoriosScreen() {
         }
       />
     </View>
+    </AppLayout>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f1f5f9' },
+  toolbar: {
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+  },
+  toolbarTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#0f172a',
+  },
+  toolbarSub: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+  },
   header: {
     backgroundColor: '#1e3a8a',
     paddingTop: 50,
@@ -271,11 +290,9 @@ const styles = StyleSheet.create({
   btnPrint: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.18)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.3)',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
+    backgroundColor: '#0284c7',
+    paddingVertical: 8,
+    paddingHorizontal: 14,
     borderRadius: 8,
   },
   btnPrintText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },

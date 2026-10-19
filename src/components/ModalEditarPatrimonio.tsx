@@ -22,7 +22,7 @@ interface Props {
 }
 
 const CATEGORIAS = ['Informática', 'Equipamentos de Saúde', 'Mobiliário', 'Climatização e Apoio'];
-const STATUS_OPCOES: Array<'Ativo' | 'Em Manutenção' | 'Baixado'> = ['Ativo', 'Em Manutenção', 'Baixado'];
+const STATUS_OPCOES: ('Ativo' | 'Em Manutenção' | 'Baixado')[] = ['Ativo', 'Em Manutenção', 'Baixado'];
 const SETORES = [
   'Almoxarifado Central - Sede SMS',
   'Departamento de TI - Sede SMS',

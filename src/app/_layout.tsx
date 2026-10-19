@@ -13,7 +13,12 @@ export default function RootLayout() {
       <AnimatedSplashOverlay />
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="index" />
+        <Stack.Screen name="dashboard" />
         <Stack.Screen name="materiais" />
+        <Stack.Screen name="relatorios" />
+        <Stack.Screen name="movimentacoes" />
+        <Stack.Screen name="novo-patrimonio" />
+        <Stack.Screen name="detalhes/[id]" />
       </Stack>
     </ThemeProvider>
   );

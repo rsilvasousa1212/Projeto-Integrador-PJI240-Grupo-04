@@ -1,14 +1,14 @@
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import {
   FlatList,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View
 } from 'react-native';
+
+import { AppLayout } from '../components/AppLayout';
 
 const DADOS_MOVIMENTACOES = [
   { 
@@ -60,7 +60,6 @@ const DADOS_MOVIMENTACOES = [
 const ABAS = ['Todas', 'Aguardando', 'Concluídas'];
 
 export default function MovimentacoesScreen() {
-  const router = useRouter();
   const [abaAtiva, setAbaAtiva] = useState('Todas');
 
   const getStatusStyle = (status: string) => {
@@ -79,16 +78,13 @@ export default function MovimentacoesScreen() {
   });
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <AntDesign name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Movimentações</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <View style={styles.tabsContainer}>
+    <AppLayout
+      rotaAtiva="movimentacoes"
+      titulo="Movimentações de Bens"
+      subtitulo="Transferências entre Unidades de Saúde • SMS Diadema"
+    >
+      <View style={styles.container}>
+        <View style={styles.tabsContainer}>
         {ABAS.map(aba => (
           <TouchableOpacity 
             key={aba} 
@@ -163,6 +159,7 @@ export default function MovimentacoesScreen() {
         }
       />
     </View>
+    </AppLayout>
   );
 }
 

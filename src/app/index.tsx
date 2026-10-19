@@ -5,7 +5,6 @@ import * as WebBrowser from 'expo-web-browser';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -43,29 +42,32 @@ export default function LoginScreen() {
           if (typeof window !== 'undefined' && window.history) {
             window.history.replaceState(null, '', window.location.pathname);
           }
-          setLoading(true);
-          setMensagemStatus('Validando acesso...');
-          api.post('/auth/google/id-token', { idToken: token })
-            .then((res) => {
-              const googleData = decodeGoogleToken(token);
-              const backendData = res?.data || {};
-              saveUser({
-                name: backendData.name || backendData.user?.name || googleData.name || 'Usuário',
-                email: backendData.email || backendData.user?.email || googleData.email || '',
-                picture: backendData.picture || backendData.user?.picture || googleData.picture,
-                role: (backendData.role === 'USER' || backendData.perfil === 'USER') ? 'USER' : 'ADMIN',
+          const timer = setTimeout(() => {
+            setLoading(true);
+            setMensagemStatus('Validando acesso...');
+            api.post('/auth/google/id-token', { idToken: token })
+              .then((res) => {
+                const googleData = decodeGoogleToken(token);
+                const backendData = res?.data || {};
+                saveUser({
+                  name: backendData.name || backendData.user?.name || googleData.name || 'Usuário',
+                  email: backendData.email || backendData.user?.email || googleData.email || '',
+                  picture: backendData.picture || backendData.user?.picture || googleData.picture,
+                  role: (backendData.role === 'USER' || backendData.perfil === 'USER') ? 'USER' : 'ADMIN',
+                });
+                router.replace('/dashboard' as any);
+              })
+              .catch((err) => {
+                console.warn('Erro ao autenticar token da URL:', err);
+                setMensagemStatus('Falha ao autenticar: ' + (err?.response?.data?.message || err?.message));
+                setLoading(false);
               });
-              router.replace('/materiais');
-            })
-            .catch((err) => {
-              console.warn('Erro ao autenticar token da URL:', err);
-              setMensagemStatus('Falha ao autenticar: ' + (err?.response?.data?.message || err?.message));
-              setLoading(false);
-            });
+          }, 0);
+          return () => clearTimeout(timer);
         }
       }
     }
-  }, []);
+  }, [router]);
 
   const handleGoogleLogin = async () => {
     try {
@@ -130,7 +132,7 @@ export default function LoginScreen() {
       });
 
       setMensagemStatus('Sucesso! Entrando...');
-      router.replace('/materiais');
+      router.replace('/dashboard' as any);
 
     } catch (error: any) {
       console.warn('Erro na autenticação:', error?.response?.status, error?.message);
@@ -149,6 +151,15 @@ export default function LoginScreen() {
       setMensagemStatus(mensagem);
       setLoading(false);
     }
+  };
+
+  const handleDemoLogin = (role: 'ADMIN' | 'USER') => {
+    saveUser({
+      name: role === 'ADMIN' ? 'Renato da Silva de Sousa' : 'Servidor Municipal',
+      email: role === 'ADMIN' ? 'renato.sousa@saude.diadema.sp.gov.br' : 'consulta.patrimonio@saude.diadema.sp.gov.br',
+      role,
+    });
+    router.replace('/dashboard' as any);
   };
 
   return (
@@ -184,6 +195,14 @@ export default function LoginScreen() {
           <Text style={styles.googleButtonText}>
             {loading ? 'Aguarde...' : 'Entrar com o Google'}
           </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.demoButton} 
+          onPress={() => handleDemoLogin('ADMIN')}
+          activeOpacity={0.8}
+        >
+          <Text style={styles.demoButtonText}>Acessar Painel Geral (Demonstração)</Text>
         </TouchableOpacity>
 
         {mensagemStatus && (
@@ -272,6 +291,25 @@ const styles = StyleSheet.create({
   googleButtonText: {
     color: '#ffffff',
     fontSize: 17,
+    fontWeight: '700',
+  },
+  demoButton: {
+    backgroundColor: '#0284c7',
+    width: '100%',
+    height: 50,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 12,
+    shadowColor: '#0284c7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  demoButtonText: {
+    color: '#ffffff',
+    fontSize: 15,
     fontWeight: '700',
   },
   footerText: {

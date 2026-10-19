@@ -13,6 +13,7 @@ import {
   View
 } from 'react-native';
 
+import { AppLayout } from '../components/AppLayout';
 import { SeletorResponsavelModal } from '../components/SeletorResponsavelModal';
 import { adicionarNovoPatrimonio } from '../services/patrimonioService';
 import { ServidorPublico } from '../services/servidoresService';
@@ -79,19 +80,16 @@ export default function NovoPatrimonioScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.container}
+    <AppLayout
+      rotaAtiva="novo-patrimonio"
+      titulo="Cadastrar Patrimônio"
+      subtitulo="Inclusão de Novo Bem no Inventário Municipal • SMS Diadema"
     >
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <AntDesign name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Novo Patrimônio</Text>
-        <View style={{ width: 40 }} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.container}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.cardSection}>
           <Text style={styles.sectionHeader}>
             <Feather name="box" size={16} color="#1e3a8a" /> Identificação do Equipamento
@@ -274,6 +272,7 @@ export default function NovoPatrimonioScreen() {
         }}
       />
     </KeyboardAvoidingView>
+    </AppLayout>
   );
 }
 
