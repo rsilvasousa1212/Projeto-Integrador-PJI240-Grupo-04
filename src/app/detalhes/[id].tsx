@@ -133,7 +133,13 @@ export default function DetalhesScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <TouchableOpacity 
+          style={styles.backButton} 
+          onPress={() => router.back()}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Voltar para a lista de materiais"
+        >
           <AntDesign name="arrow-left" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Ficha do Patrimônio</Text>
@@ -162,6 +168,9 @@ export default function DetalhesScreen() {
                 style={styles.btnEditarPatrimonio}
                 onPress={() => setModalEdicaoVisivel(true)}
                 activeOpacity={0.7}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Editar especificações técnicas deste patrimônio"
               >
                 <Feather name="edit-3" size={15} color="#1e3a8a" style={{ marginRight: 6 }} />
                 <Text style={styles.btnEditarPatrimonioText}>Editar Dados</Text>
@@ -171,6 +180,9 @@ export default function DetalhesScreen() {
                 style={styles.btnExcluirPatrimonio}
                 onPress={handleExcluir}
                 activeOpacity={0.7}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Excluir este patrimônio do inventário municipal"
               >
                 <Feather name="trash-2" size={15} color="#dc2626" style={{ marginRight: 6 }} />
                 <Text style={styles.btnExcluirPatrimonioText}>Excluir Bem</Text>
@@ -192,6 +204,9 @@ export default function DetalhesScreen() {
                 style={styles.btnEditarAtribuicao}
                 onPress={() => setModalAtribuicaoVisivel(true)}
                 activeOpacity={0.7}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel={item.responsavel === 'Não atribuído' ? 'Atribuir servidor público responsável' : 'Alterar servidor responsável pela custódia'}
               >
                 <Feather name="user-check" size={14} color="#1e3a8a" style={{ marginRight: 6 }} />
                 <Text style={styles.btnEditarAtribuicaoText}>

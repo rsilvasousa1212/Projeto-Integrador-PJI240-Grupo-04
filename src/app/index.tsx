@@ -186,6 +186,9 @@ export default function LoginScreen() {
           onPress={handleGoogleLogin} 
           activeOpacity={0.8}
           disabled={loading}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Entrar com a conta Google corporativa"
         >
           {loading ? (
             <ActivityIndicator size="small" color="#ffffff" style={styles.googleIcon} />
@@ -201,6 +204,9 @@ export default function LoginScreen() {
           style={styles.demoButton} 
           onPress={() => handleDemoLogin('ADMIN')}
           activeOpacity={0.8}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Acessar painel geral em modo de demonstração"
         >
           <Text style={styles.demoButtonText}>Acessar Painel Geral (Demonstração)</Text>
         </TouchableOpacity>

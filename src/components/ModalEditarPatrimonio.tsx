@@ -77,7 +77,13 @@ export function ModalEditarPatrimonio({ visible, item, onClose, onSalvar }: Prop
               <Text style={styles.title}>Editar Bem Patrimonial</Text>
               <Text style={styles.subtitle}>Tombamento: {item.tombamento}</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity 
+              onPress={onClose} 
+              style={styles.closeBtn}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Fechar janela de edição"
+            >
               <AntDesign name="close" size={20} color="#64748b" />
             </TouchableOpacity>
           </View>
@@ -214,11 +220,23 @@ export function ModalEditarPatrimonio({ visible, item, onClose, onSalvar }: Prop
           </ScrollView>
 
           <View style={styles.footer}>
-            <TouchableOpacity style={styles.btnCancelar} onPress={onClose}>
+            <TouchableOpacity 
+              style={styles.btnCancelar} 
+              onPress={onClose}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Cancelar alterações"
+            >
               <Text style={styles.btnCancelarText}>Cancelar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnSalvar} onPress={handleConfirmar}>
+            <TouchableOpacity 
+              style={styles.btnSalvar} 
+              onPress={handleConfirmar}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Salvar alterações do patrimônio"
+            >
               <Feather name="check" size={16} color="#fff" style={{ marginRight: 6 }} />
               <Text style={styles.btnSalvarText}>Salvar Alterações</Text>
             </TouchableOpacity>

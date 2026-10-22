@@ -18,6 +18,8 @@ import {
   obterHistoricoAuditoria,
   obterMetricasPatrimonio,
   obterTodosPatrimonios,
+  sincronizarAuditoriaComBanco,
+  sincronizarPatrimoniosComBanco,
 } from '../services/patrimonioService';
 
 export default function DashboardScreen() {
@@ -38,10 +40,17 @@ export default function DashboardScreen() {
     };
 
     carregar();
+    sincronizarPatrimoniosComBanco().then(() => carregar());
+    sincronizarAuditoriaComBanco().then(() => carregar());
 
     if (Platform.OS === 'web' && typeof window !== 'undefined') {
-      window.addEventListener('focus', carregar);
-      return () => window.removeEventListener('focus', carregar);
+      const aoFocar = () => {
+        carregar();
+        sincronizarPatrimoniosComBanco().then(() => carregar());
+        sincronizarAuditoriaComBanco().then(() => carregar());
+      };
+      window.addEventListener('focus', aoFocar);
+      return () => window.removeEventListener('focus', aoFocar);
     }
   }, []);
 
@@ -198,6 +207,9 @@ export default function DashboardScreen() {
             style={styles.actionCard}
             activeOpacity={0.7}
             onPress={() => router.push('/materiais')}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Consulta de Materiais: Pesquise por tombamento, nome, setor ou responsável nominal"
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#e0f2fe' }]}>
               <Feather name="search" size={24} color="#0284c7" />
@@ -215,6 +227,9 @@ export default function DashboardScreen() {
             style={styles.actionCard}
             activeOpacity={0.7}
             onPress={() => router.push('/relatorios')}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Relatórios e Auditoria: Consulte o histórico completo de ações e emita relatórios oficiais"
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#fef3c7' }]}>
               <Feather name="file-text" size={24} color="#d97706" />
@@ -232,6 +247,9 @@ export default function DashboardScreen() {
             style={styles.actionCard}
             activeOpacity={0.7}
             onPress={() => router.push('/movimentacoes')}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Movimentações de Bens: Gerencie transferências e termos de responsabilidade entre unidades"
           >
             <View style={[styles.actionIconBox, { backgroundColor: '#ede9fe' }]}>
               <Feather name="repeat" size={24} color="#7c3aed" />
@@ -250,6 +268,9 @@ export default function DashboardScreen() {
               style={styles.actionCard}
               activeOpacity={0.7}
               onPress={() => router.push('/novo-patrimonio')}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Cadastrar Novo Bem: Registre tombamento, especificações técnicas e alocação física"
             >
               <View style={[styles.actionIconBox, { backgroundColor: '#dcfce7' }]}>
                 <Feather name="plus-circle" size={24} color="#16a34a" />
@@ -315,6 +336,9 @@ export default function DashboardScreen() {
             <TouchableOpacity
               style={styles.seeAllButton}
               onPress={() => router.push('/relatorios')}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Ver histórico completo de auditoria"
             >
               <Text style={styles.seeAllButtonText}>Ver auditoria completa</Text>
               <Feather name="chevron-right" size={14} color="#0284c7" />

@@ -90,6 +90,10 @@ export default function MovimentacoesScreen() {
             key={aba} 
             style={[styles.tab, abaAtiva === aba && styles.tabActive]}
             onPress={() => setAbaAtiva(aba)}
+            accessible={true}
+            accessibilityRole="tab"
+            accessibilityLabel={`Aba de movimentações ${aba}`}
+            accessibilityState={{ selected: abaAtiva === aba }}
           >
             <Text style={[styles.tabText, abaAtiva === aba && styles.tabTextActive]}>{aba}</Text>
           </TouchableOpacity>
@@ -139,10 +143,20 @@ export default function MovimentacoesScreen() {
 
                 {item.status === 'Aguardando Aprovação' && (
                   <View style={styles.actionButtons}>
-                    <TouchableOpacity style={styles.btnApprove}>
+                    <TouchableOpacity 
+                      style={styles.btnApprove}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Aprovar transferência do material ${item.material}`}
+                    >
                       <AntDesign name="check" size={16} color="#fff" />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.btnReject}>
+                    <TouchableOpacity 
+                      style={styles.btnReject}
+                      accessible={true}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Recusar transferência do material ${item.material}`}
+                    >
                       <AntDesign name="close" size={16} color="#fff" />
                     </TouchableOpacity>
                   </View>

@@ -44,7 +44,13 @@ export function SeletorResponsavelModal({
               <Text style={styles.title}>Atribuir Responsável</Text>
               <Text style={styles.subtitle}>Selecione o servidor público detentor da carga</Text>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
+            <TouchableOpacity 
+              onPress={onClose} 
+              style={styles.closeBtn}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Fechar seleção de responsável"
+            >
               <AntDesign name="close" size={20} color="#64748b" />
             </TouchableOpacity>
           </View>
@@ -58,9 +64,16 @@ export function SeletorResponsavelModal({
               value={busca}
               onChangeText={setBusca}
               autoFocus
+              accessible={true}
+              accessibilityLabel="Buscar servidor por nome, e-mail, matrícula ou cargo"
             />
             {busca.length > 0 && (
-              <TouchableOpacity onPress={() => setBusca('')}>
+              <TouchableOpacity 
+                onPress={() => setBusca('')}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Limpar busca de servidor"
+              >
                 <AntDesign name="close-circle" size={16} color="#cbd5e1" />
               </TouchableOpacity>
             )}
@@ -78,6 +91,9 @@ export function SeletorResponsavelModal({
                   responsavelAtualNome === 'Não atribuído' && styles.itemCardSelected,
                 ]}
                 onPress={() => handleSelect(null)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Definir custódia como Não atribuído"
               >
                 <View style={[styles.avatarCircle, { backgroundColor: '#fee2e2' }]}>
                   <Feather name="user-x" size={18} color="#dc2626" />
@@ -94,6 +110,9 @@ export function SeletorResponsavelModal({
                 <TouchableOpacity
                   style={[styles.itemCard, selecionado && styles.itemCardSelected]}
                   onPress={() => handleSelect(item)}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Selecionar servidor ${item.nome}, cargo ${item.cargo}, setor ${item.setor}, matrícula ${item.matricula}`}
                 >
                   <View style={styles.avatarCircle}>
                     <Text style={styles.avatarInitial}>{item.nome.charAt(0)}</Text>

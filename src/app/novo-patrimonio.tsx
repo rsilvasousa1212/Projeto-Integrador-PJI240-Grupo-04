@@ -102,6 +102,9 @@ export default function NovoPatrimonioScreen() {
             placeholderTextColor="#94a3b8"
             value={nome}
             onChangeText={setNome}
+            accessible={true}
+            accessibilityLabel="Nome ou descrição do equipamento"
+            accessibilityHint="Campo obrigatório"
           />
 
           <Text style={styles.label}>Nº de Tombamento (Patrimônio) *</Text>
@@ -112,6 +115,9 @@ export default function NovoPatrimonioScreen() {
             value={tombamento}
             onChangeText={setTombamento}
             keyboardType="numeric"
+            accessible={true}
+            accessibilityLabel="Número de tombamento patrimonial"
+            accessibilityHint="Campo obrigatório"
           />
 
           <Text style={styles.label}>Categoria</Text>
@@ -121,6 +127,10 @@ export default function NovoPatrimonioScreen() {
                 key={cat}
                 style={[styles.chip, categoria === cat && styles.chipActive]}
                 onPress={() => setCategoria(cat)}
+                accessible={true}
+                accessibilityRole="tab"
+                accessibilityLabel={`Selecionar categoria ${cat}`}
+                accessibilityState={{ selected: categoria === cat }}
               >
                 <Text style={[styles.chipText, categoria === cat && styles.chipTextActive]}>
                   {cat}
@@ -252,7 +262,14 @@ export default function NovoPatrimonioScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSalvar} activeOpacity={0.8}>
+        <TouchableOpacity 
+          style={styles.saveButton} 
+          onPress={handleSalvar} 
+          activeOpacity={0.8}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Cadastrar patrimônio no sistema"
+        >
           <AntDesign name="check" size={20} color="#fff" style={{ marginRight: 8 }} />
           <Text style={styles.saveButtonText}>Cadastrar Patrimônio</Text>
         </TouchableOpacity>

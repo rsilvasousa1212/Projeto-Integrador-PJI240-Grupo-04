@@ -136,6 +136,10 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
               style={[styles.menuItem, ativo && styles.menuItemAtivo]}
               activeOpacity={0.7}
               onPress={() => handleNavegar(item.rota)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={`Navegar para ${item.label}`}
+              accessibilityState={{ selected: ativo }}
             >
               <View style={[styles.menuIconBox, ativo && styles.menuIconBoxAtivo]}>
                 <Feather
@@ -183,6 +187,9 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
           style={styles.toggleRoleButton}
           activeOpacity={0.7}
           onPress={handleAlternarPerfil}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel={`Alternar perfil para ${usuario.role === 'ADMIN' ? 'Modo Consulta' : 'Modo Administrador'}`}
         >
           <Feather name="refresh-cw" size={12} color="#0284c7" style={{ marginRight: 6 }} />
           <Text style={styles.toggleRoleText}>
@@ -194,6 +201,9 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
           style={styles.logoutButton}
           activeOpacity={0.7}
           onPress={handleLogout}
+          accessible={true}
+          accessibilityRole="button"
+          accessibilityLabel="Sair do sistema e encerrar sessão"
         >
           <AntDesign name="logout" size={14} color="#dc2626" style={{ marginRight: 6 }} />
           <Text style={styles.logoutText}>Sair do Sistema</Text>
@@ -234,6 +244,9 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
               style={styles.hamburgerButton}
               activeOpacity={0.7}
               onPress={() => setDrawerAberto(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel="Abrir menu de navegação"
             >
               <Feather name="menu" size={24} color="#0f172a" />
             </TouchableOpacity>
@@ -247,6 +260,9 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
               style={styles.mobileAvatarButton}
               activeOpacity={0.7}
               onPress={() => setDrawerAberto(true)}
+              accessible={true}
+              accessibilityRole="button"
+              accessibilityLabel={`Perfil de ${usuario.name}`}
             >
               {usuario.picture ? (
                 <Image source={{ uri: usuario.picture }} style={styles.mobileAvatar} />
@@ -273,12 +289,18 @@ export function AppLayout({ children, rotaAtiva, titulo, subtitulo }: AppLayoutP
                 style={styles.drawerBackdropClickable}
                 activeOpacity={1}
                 onPress={() => setDrawerAberto(false)}
+                accessible={true}
+                accessibilityRole="button"
+                accessibilityLabel="Fechar gaveta de navegação"
               />
               <View style={styles.drawerCard}>
                 <View style={styles.drawerHeaderActions}>
                   <TouchableOpacity
                     style={styles.closeDrawerButton}
                     onPress={() => setDrawerAberto(false)}
+                    accessible={true}
+                    accessibilityRole="button"
+                    accessibilityLabel="Fechar menu de navegação"
                   >
                     <AntDesign name="close" size={20} color="#64748b" />
                   </TouchableOpacity>

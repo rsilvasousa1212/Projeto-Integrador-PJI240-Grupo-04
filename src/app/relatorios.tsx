@@ -1,5 +1,5 @@
 import { AntDesign, Feather, MaterialIcons } from '@expo/vector-icons';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -16,6 +16,7 @@ import { AppLayout } from '../components/AppLayout';
 import {
   obterHistoricoAuditoria,
   obterMetricasPatrimonio,
+  sincronizarAuditoriaComBanco,
   TipoAcaoAuditoria
 } from '../services/patrimonioService';
 
@@ -32,8 +33,15 @@ export default function RelatoriosScreen() {
   const [busca, setBusca] = useState('');
   const [tipoFiltro, setTipoFiltro] = useState('TODOS');
 
-  const metricas = useMemo(() => obterMetricasPatrimonio(), []);
-  const historicoCompleto = useMemo(() => obterHistoricoAuditoria(), []);
+  const [metricas, setMetricas] = useState(() => obterMetricasPatrimonio());
+  const [historicoCompleto, setHistoricoCompleto] = useState(() => obterHistoricoAuditoria());
+
+  useEffect(() => {
+    sincronizarAuditoriaComBanco().then((aud) => {
+      setHistoricoCompleto(aud);
+      setMetricas(obterMetricasPatrimonio());
+    });
+  }, []);
 
   const historicoFiltrado = useMemo(() => {
     return historicoCompleto.filter((item) => {
@@ -95,7 +103,14 @@ export default function RelatoriosScreen() {
               {historicoFiltrado.length} {historicoFiltrado.length === 1 ? 'registro encontrado' : 'registros encontrados'}
             </Text>
           </View>
-          <TouchableOpacity style={styles.btnPrint} onPress={handleExportar} activeOpacity={0.8}>
+          <TouchableOpacity 
+            style={styles.btnPrint} 
+            onPress={handleExportar} 
+            activeOpacity={0.8}
+            accessible={true}
+            accessibilityRole="button"
+            accessibilityLabel="Exportar relatório ou imprimir em PDF"
+          >
             <Feather name="printer" size={16} color="#fff" style={{ marginRight: 6 }} />
             <Text style={styles.btnPrintText}>Exportar / Imprimir</Text>
           </TouchableOpacity>
@@ -164,9 +179,16 @@ export default function RelatoriosScreen() {
                 placeholderTextColor="#94a3b8"
                 value={busca}
                 onChangeText={setBusca}
+                accessible={true}
+                accessibilityLabel="Buscar registros de auditoria por tombamento, pessoa ou ação"
               />
               {busca.length > 0 && (
-                <TouchableOpacity onPress={() => setBusca('')}>
+                <TouchableOpacity 
+                  onPress={() => setBusca('')}
+                  accessible={true}
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar busca de auditoria"
+                >
                   <AntDesign name="close-circle" size={16} color="#cbd5e1" />
                 </TouchableOpacity>
               )}
@@ -182,6 +204,10 @@ export default function RelatoriosScreen() {
                   key={f.valor}
                   style={[styles.filterChip, tipoFiltro === f.valor && styles.filterChipActive]}
                   onPress={() => setTipoFiltro(f.valor)}
+                  accessible={true}
+                  accessibilityRole="tab"
+                  accessibilityLabel={`Filtrar auditoria por ${f.label}`}
+                  accessibilityState={{ selected: tipoFiltro === f.valor }}
                 >
                   <Text
                     style={[
