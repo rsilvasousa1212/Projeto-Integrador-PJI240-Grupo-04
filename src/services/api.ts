@@ -1,0 +1,29 @@
+import axios from 'axios';
+import { Platform } from 'react-native';
+
+const getBaseURL = () => {
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+    return '/api-proxy';
+  }
+  return process.env.EXPO_PUBLIC_API_URL;
+};
+
+// eslint-disable-next-line import/no-named-as-default-member
+export const api = axios.create({
+  baseURL: getBaseURL(),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+api.interceptors.request.use(
+  async (config) => {
+    if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
+      config.baseURL = '/api-proxy';
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
