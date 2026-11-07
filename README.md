@@ -265,8 +265,11 @@ gestao-patrimonio/
 ---
 
 ## 👥 Equipe do Projeto
-RENATO DA SILVA DE SOUSA
+- **Fábio Gonçalves de Oliveira Mendes**
+- **Rafael Souza Santos**
+- **Renato da Silva de Souza**
 
+**Orientador:** Prof. Expedito de Souza Morais  
 
 **Projeto Integrador em Computação II — UNIVESP (Turma 2026)**  
 - **Polo:** Diadema  
